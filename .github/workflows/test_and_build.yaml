@@ -22,5 +22,5 @@ jobs:
     - name: Install dependencies
       run: pip install -r src/requirements.txt
     - name: Test with pytest
-    working-directory: src
+      working-directory: src
       run: pytest tests.py
