@@ -1,4 +1,4 @@
 
 class Calculator:
-    def sum(selft , a: int, b: int ) -> int:
-        return a
+    def sum(self, a: int, b: int) -> int:
+        return a + b
