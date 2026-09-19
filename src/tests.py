@@ -1,4 +1,4 @@
-from src.main import Calculator
+from main import Calculator
 
 
 def test_sums_2_numbers():
