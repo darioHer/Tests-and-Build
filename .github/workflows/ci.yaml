@@ -1,4 +1,5 @@
 name: Test and Build
+
 on:
   push:
     branches:
@@ -7,6 +8,7 @@ on:
     branches:
       - main
   workflow_dispatch:
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -15,43 +17,53 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
+      # requirements.txt ya incluye pytest y ruff (versiones fijas)
       - name: Install dependencies
         working-directory: ./src
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+
       - name: Run ruff linter
         working-directory: ./src
-        run: |
-          pip install ruff==0.8.1
-          ruff check .
+        run: ruff check .
+
       - name: Run tests
         working-directory: ./src
-        run: |
-          pytest tests.py
+        run: pytest tests.py
+
   build_and_push:
     needs: test
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write  # <-- Permiso para subir a GHCR
+      packages: write # Permiso para subir a GHCR
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      # GHCR exige el nombre de la imagen en minúsculas
+      # (github.repository puede traer mayúsculas, p. ej. darioHer/Tests-and-Build)
+      - name: Set lowercase image name
+        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}:latest" >> "$GITHUB_ENV"
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v7
         with:
-          context: .
+          context: ./src # el Dockerfile está en src/, no en la raíz
           push: true
-          tags: ghcr.io/${{ github.repository }}:latest
+          tags: ${{ env.IMAGE }}
