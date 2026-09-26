@@ -4,6 +4,7 @@ GET /api/sumar?a=<num>&b=<num>          siempre disponible
 GET /api/resta?a=<num>&b=<num>          detrás del flag resta_enabled
 GET /api/multiplicar?a=<num>&b=<num>    detrás del flag resta_enabled
 GET /api/dividir?a=<num>&b=<num>        detrás del flag resta_enabled
+GET /api/potencia?a=<num>&b=<num>       detrás del flag potencia_enabled
 GET /api/historial                      operaciones realizadas en este proceso
 
   200 {"result": <num>}                     éxito
@@ -76,17 +77,14 @@ def dividir():
     return _endpoint_operacion("dividir")
 
 
-@app.get("/api/historial")
-def historial():
-    return jsonify(historial=calculadora.historial())
-
-@app.get("/api/dividir")
-def dividir():
-    return _endpoint_operacion("dividir")
-
 @app.get("/api/potencia")
 def potencia():
     return _endpoint_operacion("potencia")
+
+
+@app.get("/api/historial")
+def historial():
+    return jsonify(historial=calculadora.historial())
 
 
 if __name__ == "__main__":
