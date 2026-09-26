@@ -138,3 +138,12 @@ def test_historial_es_una_copia_independiente():
     copia.append({"operacion": "falsa", "a": 0, "b": 0, "resultado": 0})
 
     assert calc.historial() == [{"operacion": "sum", "a": 1, "b": 1, "resultado": 2}]
+
+
+def test_potencia_con_flag_encendido():
+    assert Calculator(flag_provider=flag_on).potencia(2, 3) == 8
+
+
+def test_potencia_con_flag_apagado_lanza_error():
+    with pytest.raises(FeatureDisabledError):
+        Calculator(flag_provider=flag_off).potencia(2, 3)
