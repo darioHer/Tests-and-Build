@@ -74,3 +74,18 @@ class Calculator:
         resultado = a / b
         self._registrar("dividir", a, b, resultado)
         return resultado
+
+POTENCIA_FLAG = "potencia_enabled"
+
+# dentro de la clase Calculator, junto a los demás métodos:
+def _requiere_potencia_flag(self):
+    if not self._flag(POTENCIA_FLAG, False):
+        raise FeatureDisabledError(
+            f"Esta operación está desactivada (flag '{POTENCIA_FLAG}')."
+        )
+
+def potencia(self, a, b):
+    self._requiere_potencia_flag()
+    resultado = a ** b
+    self._registrar("potencia", a, b, resultado)
+    return resultado
