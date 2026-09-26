@@ -1,6 +1,7 @@
 import os
 
 RESTA_FLAG = "resta_enabled"
+POTENCIA_FLAG = "potencia_enabled"
 
 
 class FeatureDisabledError(Exception):
@@ -41,6 +42,12 @@ class Calculator:
                 f"Esta operación está desactivada (flag '{RESTA_FLAG}')."
             )
 
+    def _requiere_potencia_flag(self):
+        if not self._flag(POTENCIA_FLAG, False):
+            raise FeatureDisabledError(
+                f"Esta operación está desactivada (flag '{POTENCIA_FLAG}')."
+            )
+
     def _registrar(self, operacion: str, a, b, resultado):
         self._historial.append(
             {"operacion": operacion, "a": a, "b": b, "resultado": resultado}
@@ -75,17 +82,8 @@ class Calculator:
         self._registrar("dividir", a, b, resultado)
         return resultado
 
-POTENCIA_FLAG = "potencia_enabled"
-
-# dentro de la clase Calculator, junto a los demás métodos:
-def _requiere_potencia_flag(self):
-    if not self._flag(POTENCIA_FLAG, False):
-        raise FeatureDisabledError(
-            f"Esta operación está desactivada (flag '{POTENCIA_FLAG}')."
-        )
-
-def potencia(self, a, b):
-    self._requiere_potencia_flag()
-    resultado = a ** b
-    self._registrar("potencia", a, b, resultado)
-    return resultado
+    def potencia(self, a, b):
+        self._requiere_potencia_flag()
+        resultado = a ** b
+        self._registrar("potencia", a, b, resultado)
+        return resultado
