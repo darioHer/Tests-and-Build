@@ -16,7 +16,7 @@ GET /api/historial                      operaciones realizadas en este proceso
 from flask import Flask, jsonify, request, send_from_directory
 
 import main
-from main import Calculator, DivisionPorCeroError, FeatureDisabledError
+from main import Calculator, DivisionPorCeroError, FeatureDisabledError, NumeroNegativoError
 
 # Una sola instancia para toda la app: así el historial acumula operaciones
 # entre requests dentro del mismo proceso (se pierde si el proceso reinicia).
@@ -56,6 +56,25 @@ def _endpoint_operacion(nombre_metodo):
 
     return jsonify(result=resultado)
 
+def _endpoint_operacion(nombre_metodo):
+    try:
+        a = _parse_number(request.args.get("a"), "a")
+        b = _parse_number(request.args.get("b"), "b")
+    except ValueError as exc:
+        return jsonify(error="invalid_params", message=str(exc)), 400
+
+    try:
+        metodo = getattr(calculadora, nombre_metodo)
+        resultado = metodo(a, b)
+    except FeatureDisabledError:
+        return jsonify(error="feature_disabled"), 404
+    except DivisionPorCeroError as exc:
+        return jsonify(error="division_por_cero", message=str(exc)), 400
+    except NumeroNegativoError as exc:
+        return jsonify(error="numero_negativo", message=str(exc)), 400
+
+    return jsonify(result=resultado)
+
 
 @app.get("/api/sumar")
 def sumar():
@@ -85,6 +104,10 @@ def potencia():
 @app.get("/api/historial")
 def historial():
     return jsonify(historial=calculadora.historial())
+
+@app.get("/api/raiz")
+def raiz():
+    return _endpoint_operacion("raiz_cuadrada")
 
 
 if __name__ == "__main__":
