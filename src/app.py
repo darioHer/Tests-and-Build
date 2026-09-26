@@ -42,24 +42,7 @@ def index():
 def _endpoint_operacion(nombre_metodo):
     try:
         a = _parse_number(request.args.get("a"), "a")
-        b = _parse_number(request.args.get("b"), "b")
-    except ValueError as exc:
-        return jsonify(error="invalid_params", message=str(exc)), 400
-
-    try:
-        metodo = getattr(calculadora, nombre_metodo)
-        resultado = metodo(a, b)
-    except FeatureDisabledError:
-        return jsonify(error="feature_disabled"), 404
-    except DivisionPorCeroError as exc:
-        return jsonify(error="division_por_cero", message=str(exc)), 400
-
-    return jsonify(result=resultado)
-
-def _endpoint_operacion(nombre_metodo):
-    try:
-        a = _parse_number(request.args.get("a"), "a")
-        b = _parse_number(request.args.get("b"), "b")
+        b = _parse_number(request.args.get("b", 0), "b") if nombre_metodo == "raiz_cuadrada" and request.args.get("b") is None else _parse_number(request.args.get("b"), "b")
     except ValueError as exc:
         return jsonify(error="invalid_params", message=str(exc)), 400
 
