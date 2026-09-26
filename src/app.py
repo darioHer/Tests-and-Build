@@ -80,6 +80,14 @@ def dividir():
 def historial():
     return jsonify(historial=calculadora.historial())
 
+@app.get("/api/dividir")
+def dividir():
+    return _endpoint_operacion("dividir")
+
+@app.get("/api/potencia")
+def potencia():
+    return _endpoint_operacion("potencia")
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)

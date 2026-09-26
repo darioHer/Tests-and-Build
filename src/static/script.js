@@ -89,4 +89,45 @@ window.addEventListener("DOMContentLoaded", async () => {
     flagBloque.hidden = true;
   }
   await refrescarHistorial();
+
+  window.addEventListener("DOMContentLoaded", async () => {
+  try {
+    const resp = await fetch("/api/resta?a=0&b=0");
+    restaBloque.hidden = resp.status === 404;
+  } catch {
+    restaBloque.hidden = true;
+  }
+
+  try {
+    const resp = await fetch("/api/potencia?a=0&b=0");
+    potenciaBloque.hidden = resp.status === 404;
+  } catch {
+    potenciaBloque.hidden = true;
+  }
+});
+});
+
+
+const potenciaBloque = document.getElementById("potencia-bloque");
+
+async function pedirPotencia(a, b) {
+  const resp = await fetch(`/api/potencia?a=${a}&b=${b}`);
+  if (resp.status === 404) {
+    potenciaBloque.hidden = true;
+    return null;
+  }
+  if (!resp.ok) {
+    throw new Error("Error consultando /api/potencia");
+  }
+  const data = await resp.json();
+  return data.result;
+}
+
+document.getElementById("btn-potencia").addEventListener("click", async () => {
+  const i = Number(document.getElementById("i").value);
+  const j = Number(document.getElementById("j").value);
+  const resultado = await pedirPotencia(i, j);
+  if (resultado !== null) {
+    resultadoEl.textContent = `Resultado: ${resultado}`;
+  }
 });
