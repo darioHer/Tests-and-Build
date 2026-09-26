@@ -2,6 +2,7 @@ import os
 
 RESTA_FLAG = "resta_enabled"
 POTENCIA_FLAG = "potencia_enabled"
+RAIZ_FLAG = "raiz_enabled"
 
 
 class FeatureDisabledError(Exception):
@@ -12,6 +13,8 @@ class DivisionPorCeroError(Exception):
     """Se intenta dividir por cero."""
 
 
+class NumeroNegativoError(Exception):
+    """Se intenta calcular la raíz cuadrada de un número negativo."""
 def configcat_flag(key: str, default: bool = False) -> bool:
     """Lee un feature flag de ConfigCat.
 
@@ -86,4 +89,18 @@ class Calculator:
         self._requiere_potencia_flag()
         resultado = a ** b
         self._registrar("potencia", a, b, resultado)
+        return resultado
+
+    def _requiere_raiz_flag(self):
+        if not self._flag(RAIZ_FLAG, False):
+            raise FeatureDisabledError(
+                f"Esta operación está desactivada (flag '{RAIZ_FLAG}')."
+            )
+
+    def raiz_cuadrada(self, a, b=None):
+        self._requiere_raiz_flag()
+        if a < 0:
+            raise NumeroNegativoError("No se puede calcular la raíz cuadrada de un número negativo.")
+        resultado = a ** 0.5
+        self._registrar("raiz_cuadrada", a, b, resultado)
         return resultado

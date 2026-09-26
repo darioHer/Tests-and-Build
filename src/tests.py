@@ -8,9 +8,9 @@ from main import (
     Calculator,
     DivisionPorCeroError,
     FeatureDisabledError,
+    NumeroNegativoError,
     configcat_flag,
 )
-
 
 def flag_on(key, default=False):
     return True
@@ -147,3 +147,17 @@ def test_potencia_con_flag_encendido():
 def test_potencia_con_flag_apagado_lanza_error():
     with pytest.raises(FeatureDisabledError):
         Calculator(flag_provider=flag_off).potencia(2, 3)
+
+
+def test_raiz_cuadrada_con_flag_encendido():
+    assert Calculator(flag_provider=flag_on).raiz_cuadrada(9, None) == 3
+
+
+def test_raiz_cuadrada_con_flag_apagado_lanza_error():
+    with pytest.raises(FeatureDisabledError):
+        Calculator(flag_provider=flag_off).raiz_cuadrada(9, None)
+
+
+def test_raiz_cuadrada_negativo_lanza_error_especifico():
+    with pytest.raises(NumeroNegativoError):
+        Calculator(flag_provider=flag_on).raiz_cuadrada(-4, None)
