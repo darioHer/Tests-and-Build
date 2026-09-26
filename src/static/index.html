@@ -7,26 +7,43 @@
     body { font-family: system-ui, sans-serif; max-width: 360px; margin: 3rem auto; }
     input { width: 4rem; }
     #resultado { font-weight: bold; margin-top: 1rem; }
-    #resta-bloque[hidden] { display: none; }
+    #flag-bloque[hidden] { display: none; }
+    .fila { margin-top: 0.5rem; }
+    #historial { padding-left: 1.2rem; font-size: 0.9rem; }
   </style>
 </head>
 <body>
   <h1>Calculadora</h1>
 
-  <div>
+  <div class="fila">
     <input id="a" type="number" value="5" /> +
     <input id="b" type="number" value="3" />
     <button id="btn-sumar">Sumar</button>
   </div>
 
-  <!-- Oculto por defecto; solo aparece si /api/resta responde que el flag está encendido -->
-  <div id="resta-bloque" hidden>
-    <input id="c" type="number" value="5" /> -
-    <input id="d" type="number" value="3" />
-    <button id="btn-restar">Restar</button>
+  <!-- Oculto por defecto; solo aparece si el backend confirma que el flag está encendido -->
+  <div id="flag-bloque" hidden>
+    <div class="fila">
+      <input id="c" type="number" value="5" /> -
+      <input id="d" type="number" value="3" />
+      <button id="btn-restar">Restar</button>
+    </div>
+    <div class="fila">
+      <input id="e" type="number" value="4" /> ×
+      <input id="f" type="number" value="3" />
+      <button id="btn-multiplicar">Multiplicar</button>
+    </div>
+    <div class="fila">
+      <input id="g" type="number" value="10" /> ÷
+      <input id="h" type="number" value="2" />
+      <button id="btn-dividir">Dividir</button>
+    </div>
   </div>
 
   <p id="resultado"></p>
+
+  <h2>Historial</h2>
+  <ul id="historial"></ul>
 
   <script src="script.js"></script>
 </body>
