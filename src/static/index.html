@@ -426,6 +426,19 @@
       </div>
     </header>
 
+    <!-- Feature Flag Mode Controller -->
+    <div style="background: rgba(15, 23, 42, 0.7); border: 1px dashed rgba(56, 189, 248, 0.35); border-radius: 0.75rem; padding: 0.9rem 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+      <div style="font-size: 0.85rem; font-weight: 700; color: #38bdf8; display: flex; align-items: center; gap: 0.4rem;">
+        <span>🎛️ Modo de Feature Flags:</span>
+      </div>
+      <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+        <button id="mode-all" class="btn-calc" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; background: rgba(16, 185, 129, 0.2); border: 1px solid var(--success); color: #34d399;" title="Habilita todas las operaciones para pruebas locales">🟢 Todos Activos (GA)</button>
+        <button id="mode-canary" class="btn-calc" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; background: rgba(245, 158, 11, 0.2); border: 1px solid var(--warning); color: #fbbf24;" title="Rollout 10% (Suma + Resta + Multiplicación)">🟡 10% Canary</button>
+        <button id="mode-off" class="btn-calc" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; background: rgba(239, 68, 68, 0.2); border: 1px solid var(--danger); color: #f87171;" title="Simula flags desactivados (Solo Suma)">🔴 0% (Fail-Closed)</button>
+        <button id="mode-prod" class="btn-calc" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--card-border); color: #cbd5e1;" title="Lee directamente desde ConfigCat Cloud">☁️ ConfigCat Cloud</button>
+      </div>
+    </div>
+
     <!-- Main Grid -->
     <div class="app-grid">
       <!-- Calculator Column -->

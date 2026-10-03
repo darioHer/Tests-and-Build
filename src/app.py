@@ -27,6 +27,22 @@ from main import (
 
 
 def _current_flag_provider(key, default=False):
+    # Soporte para entorno local o simulador en UI
+    sim = None
+    try:
+        sim = request.args.get("simulate_flags") or request.headers.get("X-Simulate-Flags")
+    except Exception:
+        pass
+    if sim in ("all", "on", "true", "100"):
+        return True
+    if sim == "10":
+        return key in ("resta_enabled", "multiplicacion_enabled")
+    if sim in ("off", "0", "false"):
+        return False
+
+    if os.environ.get("LOCAL_FLAGS", "").lower() in ("true", "1", "on", "all"):
+        return True
+
     user_id = None
     try:
         user_id = request.args.get("user_id") or request.headers.get("X-User-ID") or request.remote_addr

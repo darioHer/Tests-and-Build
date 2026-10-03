@@ -10,6 +10,8 @@ const userDisplay = document.getElementById("user-display");
 const healthBadge = document.getElementById("health-badge");
 const healthText = document.getElementById("health-text");
 
+let currentFlagMode = localStorage.getItem("tbd_flag_mode") || "all";
+
 function getUserId() {
   let userId = localStorage.getItem("tbd_user_id");
   if (!userId) {
@@ -17,6 +19,10 @@ function getUserId() {
     localStorage.setItem("tbd_user_id", userId);
   }
   return userId;
+}
+
+function getSimQuery() {
+  return currentFlagMode !== "prod" ? `&simulate_flags=${currentFlagMode}` : "";
 }
 
 function mostrarResultado(valor, operacionTexto) {
@@ -43,8 +49,9 @@ function mostrarError(data) {
 
 async function pedirOperacion(endpoint, a, b, bloqueAOcultar) {
   const userId = getUserId();
+  const sim = getSimQuery();
   try {
-    const resp = await fetch(`/api/${endpoint}?a=${a}&b=${b}&user_id=${userId}`);
+    const resp = await fetch(`/api/${endpoint}?a=${a}&b=${b}&user_id=${userId}${sim}`);
     const data = await resp.json();
 
     if (resp.status === 404) {
@@ -195,19 +202,34 @@ if (refreshBtn) {
   refreshBtn.addEventListener("click", refrescarHistorial);
 }
 
-// Inicialización de la aplicación
-window.addEventListener("DOMContentLoaded", async () => {
+// Actualización de UI según el modo de simulación
+async function actualizarEstadoFlags() {
   const userId = getUserId();
-  if (userDisplay) {
-    userDisplay.textContent = userId;
-  }
+  const sim = getSimQuery();
 
-  // Verificación de estado de salud
-  await verificarHealth();
+  // Actualizar estilos de los botones de modo
+  const modeButtons = {
+    all: document.getElementById("mode-all"),
+    canary: document.getElementById("mode-canary"),
+    off: document.getElementById("mode-off"),
+    prod: document.getElementById("mode-prod"),
+  };
+
+  for (const [key, btn] of Object.entries(modeButtons)) {
+    if (btn) {
+      if (key === currentFlagMode) {
+        btn.style.opacity = "1";
+        btn.style.boxShadow = "0 0 10px rgba(56, 189, 248, 0.4)";
+      } else {
+        btn.style.opacity = "0.6";
+        btn.style.boxShadow = "none";
+      }
+    }
+  }
 
   // Comprobar flags en backend
   try {
-    const resp = await fetch(`/api/resta?a=0&b=0&user_id=${userId}`);
+    const resp = await fetch(`/api/resta?a=0&b=0&user_id=${userId}${sim}`);
     const activo = resp.status !== 404;
     if (flagBloque) flagBloque.hidden = !activo;
     actualizarChip("chip-resta", activo, "100% GA");
@@ -217,7 +239,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   try {
-    const resp = await fetch(`/api/multiplicar?a=0&b=0&user_id=${userId}`);
+    const resp = await fetch(`/api/multiplicar?a=0&b=0&user_id=${userId}${sim}`);
     const activo = resp.status !== 404;
     if (multiplicarBloque) multiplicarBloque.hidden = !activo;
     actualizarChip("chip-mult", activo, "10% Canary");
@@ -227,7 +249,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   try {
-    const resp = await fetch(`/api/dividir?a=0&b=1&user_id=${userId}`);
+    const resp = await fetch(`/api/dividir?a=0&b=1&user_id=${userId}${sim}`);
     const activo = resp.status !== 404;
     if (dividirBloque) dividirBloque.hidden = !activo;
     actualizarChip("chip-div", activo, "100% GA");
@@ -237,7 +259,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   try {
-    const resp = await fetch(`/api/potencia?a=0&b=0&user_id=${userId}`);
+    const resp = await fetch(`/api/potencia?a=0&b=0&user_id=${userId}${sim}`);
     const activo = resp.status !== 404;
     if (potenciaBloque) potenciaBloque.hidden = !activo;
     actualizarChip("chip-pot", activo, "100% GA");
@@ -247,7 +269,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   try {
-    const resp = await fetch(`/api/raiz?a=0&b=0&user_id=${userId}`);
+    const resp = await fetch(`/api/raiz?a=0&b=0&user_id=${userId}${sim}`);
     const activo = resp.status !== 404;
     if (raizBloque) raizBloque.hidden = !activo;
     actualizarChip("chip-raiz", activo, "100% GA");
@@ -255,6 +277,37 @@ window.addEventListener("DOMContentLoaded", async () => {
     if (raizBloque) raizBloque.hidden = true;
     actualizarChip("chip-raiz", false);
   }
+}
+
+function cambiarModoFlags(nuevoModo) {
+  currentFlagMode = nuevoModo;
+  localStorage.setItem("tbd_flag_mode", nuevoModo);
+  actualizarEstadoFlags();
+}
+
+// Inicialización de la aplicación
+window.addEventListener("DOMContentLoaded", async () => {
+  const userId = getUserId();
+  if (userDisplay) {
+    userDisplay.textContent = userId;
+  }
+
+  // Vincular botones de modo de flags
+  const btnAll = document.getElementById("mode-all");
+  const btnCanary = document.getElementById("mode-canary");
+  const btnOff = document.getElementById("mode-off");
+  const btnProd = document.getElementById("mode-prod");
+
+  if (btnAll) btnAll.addEventListener("click", () => cambiarModoFlags("all"));
+  if (btnCanary) btnCanary.addEventListener("click", () => cambiarModoFlags("canary"));
+  if (btnOff) btnOff.addEventListener("click", () => cambiarModoFlags("off"));
+  if (btnProd) btnProd.addEventListener("click", () => cambiarModoFlags("prod"));
+
+  // Verificación de estado de salud
+  await verificarHealth();
+
+  // Comprobar flags en backend
+  await actualizarEstadoFlags();
 
   await refrescarHistorial();
 });
