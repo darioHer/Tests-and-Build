@@ -490,12 +490,25 @@
       return userId;
     }
 
+    function getSimParam() {
+      if (simulatedState === "100") return "all";
+      if (simulatedState === "10") return "10";
+      return "off";
+    }
+
     document.getElementById("user-display").textContent = getUserId();
 
     const bannerEl = document.getElementById("state-banner");
     const formEl = document.getElementById("comment-form");
     const listEl = document.getElementById("comments-list");
     const countEl = document.getElementById("comments-count");
+
+    // Pre-cargar autor guardado
+    const savedAuthor = localStorage.getItem("tbd_comment_author");
+    if (savedAuthor) {
+      const inputAuthor = document.getElementById("input-author");
+      if (inputAuthor) inputAuthor.value = savedAuthor;
+    }
 
     // Botones del Simulador
     document.getElementById("sim-off").addEventListener("click", () => setSimulationState("0"));
@@ -520,11 +533,11 @@
           <span>🔒</span>
           <div>
             <strong>Comentarios Desactivados (0% OFF - Ticket 1):</strong>
-            El feature flag <code>comments_enabled</code> está apagado. El endpoint POST guarda internamente en el backend pero la interfaz oculta los comentarios y el formulario.
+            El feature flag <code>comments_enabled</code> está apagado. El backend rechaza la visualización y publicación con error 404 (feature disabled).
           </div>
         `;
         formEl.style.display = "none";
-        listEl.innerHTML = '<div class="empty-comments">La sección de comentarios está temporalmente deshabilitada por configuración.</div>';
+        listEl.innerHTML = '<div class="empty-comments">La sección de comentarios está desactivada por Feature Toggle (0% Rollout).</div>';
         countEl.textContent = "Desactivado";
       } else if (simulatedState === "10") {
         bannerEl.className = "banner banner-warning";
@@ -552,8 +565,13 @@
     async function cargarComentarios() {
       if (simulatedState === "0") return;
 
+      const sim = getSimParam();
       try {
-        const resp = await fetch(`/api/articles/${ARTICLE_ID}/comments?user_id=${getUserId()}`);
+        const resp = await fetch(`/api/articles/${ARTICLE_ID}/comments?user_id=${getUserId()}&simulate_flags=${sim}`, {
+          headers: {
+            "X-Simulate-Flags": sim
+          }
+        });
         if (!resp.ok) {
           listEl.innerHTML = '<div class="empty-comments">No se pudieron cargar los comentarios (Flag desactivado en servidor).</div>';
           countEl.textContent = "0 comentarios";
@@ -601,6 +619,8 @@
         minute: "2-digit"
       });
 
+      const replyAuthorDefault = localStorage.getItem("tbd_comment_author") || "";
+
       item.innerHTML = `
         <div class="comment-header">
           <div class="comment-author">
@@ -616,7 +636,7 @@
           </div>
           <div id="reply-box-${comment.id}" class="reply-form-container" style="display: none;">
             <div class="comment-form" style="margin-bottom: 0.5rem; background: rgba(15, 23, 42, 0.9);">
-              <input type="text" id="reply-author-${comment.id}" placeholder="Tu nombre" style="width: 180px;" />
+              <input type="text" id="reply-author-${comment.id}" value="${escapeHTML(replyAuthorDefault)}" placeholder="Tu nombre" style="width: 180px;" />
               <textarea id="reply-content-${comment.id}" placeholder="Escribe tu respuesta..." style="min-height: 50px;"></textarea>
               <button type="button" class="btn-submit" onclick="enviarRespuesta('${comment.id}')">Enviar Respuesta</button>
             </div>
@@ -650,40 +670,85 @@
 
       const author = authorInput.value.trim();
       const content = contentInput.value.trim();
-      if (!author || !content) return;
+      if (!author || !content) {
+        alert("Por favor completa tu nombre y el texto de la respuesta.");
+        return;
+      }
 
-      const resp = await fetch(`/api/articles/${ARTICLE_ID}/comments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ author, content, parent_id: parentId })
-      });
+      localStorage.setItem("tbd_comment_author", author);
+      const sim = getSimParam();
 
-      if (resp.ok) {
-        authorInput.value = "";
-        contentInput.value = "";
-        cargarComentarios();
-      } else {
-        alert("No se pudo publicar la respuesta (comprueba el estado del Feature Flag).");
+      try {
+        const resp = await fetch(`/api/articles/${ARTICLE_ID}/comments?simulate_flags=${sim}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Simulate-Flags": sim
+          },
+          body: JSON.stringify({
+            author,
+            content,
+            parent_id: parentId,
+            simulate_flags: sim
+          })
+        });
+
+        const data = await resp.json();
+        if (resp.ok) {
+          contentInput.value = "";
+          const box = document.getElementById(`reply-box-${parentId}`);
+          if (box) box.style.display = "none";
+          await cargarComentarios();
+        } else {
+          alert(data.message || data.error || "No se pudo publicar la respuesta (comprueba el estado del Feature Flag).");
+        }
+      } catch {
+        alert("Error de conexión al enviar la respuesta.");
       }
     };
 
     formEl.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const author = document.getElementById("input-author").value.trim();
-      const content = document.getElementById("input-content").value.trim();
+      const authorInput = document.getElementById("input-author");
+      const contentInput = document.getElementById("input-content");
+      const submitBtn = formEl.querySelector(".btn-submit");
+
+      const author = authorInput.value.trim();
+      const content = contentInput.value.trim();
       if (!author || !content) return;
 
-      const resp = await fetch(`/api/articles/${ARTICLE_ID}/comments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ author, content })
-      });
+      localStorage.setItem("tbd_comment_author", author);
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Publicando...";
 
-      if (resp.ok) {
-        document.getElementById("input-content").value = "";
-        cargarComentarios();
-      } else {
-        alert("No se pudo publicar el comentario.");
+      const sim = getSimParam();
+
+      try {
+        const resp = await fetch(`/api/articles/${ARTICLE_ID}/comments?simulate_flags=${sim}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Simulate-Flags": sim
+          },
+          body: JSON.stringify({
+            author,
+            content,
+            simulate_flags: sim
+          })
+        });
+
+        const data = await resp.json();
+        if (resp.ok) {
+          contentInput.value = "";
+          await cargarComentarios();
+        } else {
+          alert(data.message || data.error || "No se pudo publicar el comentario.");
+        }
+      } catch {
+        alert("Error de conexión al enviar el comentario.");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Publicar Comentario";
       }
     });
 

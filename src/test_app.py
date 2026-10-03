@@ -233,4 +233,46 @@ def test_post_nested_reply_endpoint(client, monkeypatch):
     assert resp_reply.status_code == 201
     assert resp_reply.get_json()["comment"]["parent_id"] == parent_id
 
+
+def test_blog_route_serves_html(client):
+    resp = client.get("/blog")
+    assert resp.status_code == 200
+    assert b"Blog TBD" in resp.data
+    assert b"comments_enabled" in resp.data
+
+
+def test_post_comment_con_simulacion_header_y_query(client):
+    # Test using live provider in app_module
+    app_module.comment_service = main_module.CommentService(
+        flag_provider=app_module._current_flag_provider
+    )
+    # 1. Simulación apagada (0%)
+    resp_off = client.post(
+        "/api/articles/1/comments?simulate_flags=0",
+        json={"author": "Tester", "content": "Bloqueado"}
+    )
+    assert resp_off.status_code == 404
+
+    # 2. Simulación encendida (100% / all)
+    resp_on = client.post(
+        "/api/articles/1/comments?simulate_flags=all",
+        json={"author": "Tester", "content": "Permitido"}
+    )
+    assert resp_on.status_code == 201
+
+    # 3. Simulación vía header
+    resp_header = client.post(
+        "/api/articles/1/comments",
+        headers={"X-Simulate-Flags": "all"},
+        json={"author": "Tester2", "content": "Permitido por Header"}
+    )
+    assert resp_header.status_code == 201
+
+    # 4. Lectura en cohorte del 10% (Canary)
+    resp_canary = client.get(
+        "/api/articles/1/comments?simulate_flags=10"
+    )
+    assert resp_canary.status_code == 200
+    assert len(resp_canary.get_json()["comments"]) >= 1
+
 

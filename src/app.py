@@ -27,20 +27,29 @@ from main import (
 
 
 def _current_flag_provider(key, default=False):
-    # Soporte para entorno local o simulador en UI
+    # Soporte para entorno local o simulador en UI (query param, header o body JSON)
     sim = None
     try:
         sim = request.args.get("simulate_flags") or request.headers.get("X-Simulate-Flags")
+        if not sim and request.is_json:
+            json_body = request.get_json(silent=True) or {}
+            sim = json_body.get("simulate_flags")
     except Exception:
         pass
+
     if sim in ("all", "on", "true", "100"):
         return True
     if sim == "10":
-        return key in ("resta_enabled", "multiplicacion_enabled")
+        return key in ("resta_enabled", "multiplicacion_enabled", "comments_enabled")
     if sim in ("off", "0", "false"):
         return False
 
     if os.environ.get("LOCAL_FLAGS", "").lower() in ("true", "1", "on", "all"):
+        return True
+
+    # Si no se configuró CONFIGCAT_SDK_KEY (ejecución local offline),
+    # permitir funcionalidad para desarrollo local sin requerir credenciales externas
+    if not os.environ.get("CONFIGCAT_SDK_KEY"):
         return True
 
     user_id = None
