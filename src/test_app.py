@@ -132,4 +132,33 @@ def test_raiz_numero_negativo(client, monkeypatch):
     monkeypatch.setattr(main_module, "configcat_flag", lambda key, default=False: True)
     resp = client.get("/api/raiz?a=-9")
     assert resp.status_code == 400
-    assert resp.get_json()["error"] == "numero_negativo"
+    assert resp.get_json()["error"] == "numero_negativo"
+
+
+def test_health_check_endpoint(client):
+    resp = client.get("/health")
+    assert resp.status_code == 200
+    assert resp.get_json()["status"] == "ok"
+    assert resp.get_json()["app"] == "calculadora-web"
+
+
+def test_multiplicacion_endpoint_alias(client, monkeypatch):
+    monkeypatch.setattr(main_module, "configcat_flag", lambda key, default=False: True)
+    resp = client.get("/api/multiplicacion?a=6&b=7")
+    assert resp.status_code == 200
+    assert resp.get_json() == {"result": 42}
+
+
+def test_division_endpoint_alias(client, monkeypatch):
+    monkeypatch.setattr(main_module, "configcat_flag", lambda key, default=False: True)
+    resp = client.get("/api/division?a=20&b=4")
+    assert resp.status_code == 200
+    assert resp.get_json() == {"result": 5}
+
+
+def test_division_endpoint_alias_por_cero(client, monkeypatch):
+    monkeypatch.setattr(main_module, "configcat_flag", lambda key, default=False: True)
+    resp = client.get("/api/division?a=20&b=0")
+    assert resp.status_code == 400
+    assert resp.get_json()["error"] == "division_por_cero"
+

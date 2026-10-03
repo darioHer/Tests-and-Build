@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: calculadora-tbd
+    runtime: python
+    plan: free
+    branch: main
+    autoDeploy: true
+    buildCommand: pip install -r src/requirements.txt
+    startCommand: gunicorn --chdir src app:app --bind 0.0.0.0:$PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.7
+      - key: CONFIGCAT_SDK_KEY
+        sync: false

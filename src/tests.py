@@ -4,6 +4,8 @@ import types
 import pytest
 
 from main import (
+    DIVISION_FLAG,
+    MULTIPLICACION_FLAG,
     RESTA_FLAG,
     Calculator,
     DivisionPorCeroError,
@@ -161,3 +163,50 @@ def test_raiz_cuadrada_con_flag_apagado_lanza_error():
 def test_raiz_cuadrada_negativo_lanza_error_especifico():
     with pytest.raises(NumeroNegativoError):
         Calculator(flag_provider=flag_on).raiz_cuadrada(-4, None)
+
+
+# --- Tests de Ejemplo 5 (Tickets 1, 2 y 3) ---
+
+def test_ticket1_multiplicacion_metodo_con_flag_encendido():
+    assert Calculator(flag_provider=flag_on).multiplicacion(4, 3) == 12
+
+
+def test_ticket1_multiplicacion_metodo_con_flag_apagado_lanza_error():
+    with pytest.raises(FeatureDisabledError):
+        Calculator(flag_provider=flag_off).multiplicacion(4, 3)
+
+
+def test_ticket1_multiplicacion_consulta_flag_multiplicacion_enabled():
+    pedidos = []
+
+    def spy(key, default=False):
+        pedidos.append(key)
+        return True
+
+    Calculator(flag_provider=spy).multiplicacion(2, 3)
+    assert pedidos[0] == MULTIPLICACION_FLAG
+
+
+def test_ticket3_division_metodo_con_flag_encendido():
+    assert Calculator(flag_provider=flag_on).division(10, 2) == 5.0
+
+
+def test_ticket3_division_metodo_por_cero_lanza_error():
+    with pytest.raises(DivisionPorCeroError):
+        Calculator(flag_provider=flag_on).division(10, 0)
+
+
+def test_ticket3_division_metodo_con_flag_apagado_lanza_error():
+    with pytest.raises(FeatureDisabledError):
+        Calculator(flag_provider=flag_off).division(10, 2)
+
+
+def test_ticket3_division_consulta_flag_division_enabled():
+    pedidos = []
+
+    def spy(key, default=False):
+        pedidos.append(key)
+        return True
+
+    Calculator(flag_provider=spy).division(8, 2)
+    assert pedidos[0] == DIVISION_FLAG

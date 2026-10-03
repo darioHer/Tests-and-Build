@@ -1,8 +1,19 @@
 const resultadoEl = document.getElementById("resultado");
 const flagBloque = document.getElementById("flag-bloque");
+const multiplicarBloque = document.getElementById("multiplicar-bloque");
+const dividirBloque = document.getElementById("dividir-bloque");
 const potenciaBloque = document.getElementById("potencia-bloque");
 const raizBloque = document.getElementById("raiz-bloque");
 const historialEl = document.getElementById("historial");
+
+function getUserId() {
+  let userId = localStorage.getItem("tbd_user_id");
+  if (!userId) {
+    userId = "user_" + Math.random().toString(36).substring(2, 10);
+    localStorage.setItem("tbd_user_id", userId);
+  }
+  return userId;
+}
 
 function mostrarResultado(valor) {
   resultadoEl.textContent = `Resultado: ${valor}`;
@@ -19,7 +30,8 @@ function mostrarError(data) {
 }
 
 async function pedirOperacion(endpoint, a, b, bloqueAOcultar) {
-  const resp = await fetch(`/api/${endpoint}?a=${a}&b=${b}`);
+  const userId = getUserId();
+  const resp = await fetch(`/api/${endpoint}?a=${a}&b=${b}&user_id=${userId}`);
   const data = await resp.json();
 
   if (resp.status === 404) {
@@ -46,7 +58,9 @@ async function refrescarHistorial() {
         sum: "+",
         resta: "-",
         multiplicar: "×",
+        multiplicacion: "×",
         dividir: "÷",
+        division: "÷",
         potencia: "^",
         raiz_cuadrada: "√",
       }[item.operacion] ?? item.operacion;
@@ -80,7 +94,7 @@ document.getElementById("btn-restar").addEventListener("click", async () => {
 document.getElementById("btn-multiplicar").addEventListener("click", async () => {
   const e = Number(document.getElementById("e").value);
   const f = Number(document.getElementById("f").value);
-  const resultado = await pedirOperacion("multiplicar", e, f, flagBloque);
+  const resultado = await pedirOperacion("multiplicar", e, f, multiplicarBloque);
   if (resultado !== null) mostrarResultado(resultado);
   await refrescarHistorial();
 });
@@ -88,7 +102,7 @@ document.getElementById("btn-multiplicar").addEventListener("click", async () =>
 document.getElementById("btn-dividir").addEventListener("click", async () => {
   const g = Number(document.getElementById("g").value);
   const h = Number(document.getElementById("h").value);
-  const resultado = await pedirOperacion("dividir", g, h, flagBloque);
+  const resultado = await pedirOperacion("dividir", g, h, dividirBloque);
   if (resultado !== null) mostrarResultado(resultado);
   await refrescarHistorial();
 });
@@ -111,25 +125,41 @@ document.getElementById("btn-raiz").addEventListener("click", async () => {
 // Al cargar, probamos silenciosamente si cada flag está encendido para
 // decidir qué bloques mostrar (rollout independiente por operación).
 window.addEventListener("DOMContentLoaded", async () => {
+  const userId = getUserId();
+
   try {
-    const resp = await fetch("/api/resta?a=0&b=0");
-    flagBloque.hidden = resp.status === 404;
+    const resp = await fetch(`/api/resta?a=0&b=0&user_id=${userId}`);
+    if (flagBloque) flagBloque.hidden = resp.status === 404;
   } catch {
-    flagBloque.hidden = true;
+    if (flagBloque) flagBloque.hidden = true;
   }
 
   try {
-    const resp = await fetch("/api/potencia?a=0&b=0");
-    potenciaBloque.hidden = resp.status === 404;
+    const resp = await fetch(`/api/multiplicar?a=0&b=0&user_id=${userId}`);
+    if (multiplicarBloque) multiplicarBloque.hidden = resp.status === 404;
   } catch {
-    potenciaBloque.hidden = true;
+    if (multiplicarBloque) multiplicarBloque.hidden = true;
   }
 
   try {
-    const resp = await fetch("/api/raiz?a=0&b=0");
-    raizBloque.hidden = resp.status === 404;
+    const resp = await fetch(`/api/dividir?a=0&b=1&user_id=${userId}`);
+    if (dividirBloque) dividirBloque.hidden = resp.status === 404;
   } catch {
-    raizBloque.hidden = true;
+    if (dividirBloque) dividirBloque.hidden = true;
+  }
+
+  try {
+    const resp = await fetch(`/api/potencia?a=0&b=0&user_id=${userId}`);
+    if (potenciaBloque) potenciaBloque.hidden = resp.status === 404;
+  } catch {
+    if (potenciaBloque) potenciaBloque.hidden = true;
+  }
+
+  try {
+    const resp = await fetch(`/api/raiz?a=0&b=0&user_id=${userId}`);
+    if (raizBloque) raizBloque.hidden = resp.status === 404;
+  } catch {
+    if (raizBloque) raizBloque.hidden = true;
   }
 
   await refrescarHistorial();

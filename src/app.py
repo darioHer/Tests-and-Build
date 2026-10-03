@@ -13,14 +13,28 @@ GET /api/historial                      operaciones realizadas en este proceso
   400 {"error": "invalid_params"}            faltan o no son numéricos a/b
   400 {"error": "division_por_cero"}         b == 0 en /api/dividir
 """
+import os
 from flask import Flask, jsonify, request, send_from_directory
 
 import main
 from main import Calculator, DivisionPorCeroError, FeatureDisabledError, NumeroNegativoError
 
+
+def _current_flag_provider(key, default=False):
+    user_id = None
+    try:
+        user_id = request.args.get("user_id") or request.headers.get("X-User-ID") or request.remote_addr
+    except Exception:
+        pass
+    try:
+        return main.configcat_flag(key, default, user=user_id)
+    except TypeError:
+        return main.configcat_flag(key, default)
+
+
 # Una sola instancia para toda la app: así el historial acumula operaciones
 # entre requests dentro del mismo proceso (se pierde si el proceso reinicia).
-calculadora = Calculator(flag_provider=lambda key, default=False: main.configcat_flag(key, default))
+calculadora = Calculator(flag_provider=_current_flag_provider)
 
 app = Flask(__name__, static_folder="static", static_url_path="")
 
@@ -37,6 +51,12 @@ def _parse_number(raw, name):
 @app.get("/")
 def index():
     return send_from_directory(app.static_folder, "index.html")
+
+
+@app.get("/health")
+def health():
+    """Endpoint de comprobación de salud para Render y orquestadores."""
+    return jsonify(status="ok", app="calculadora-web", version="1.0.0"), 200
 
 
 def _endpoint_operacion(nombre_metodo):
@@ -70,11 +90,13 @@ def resta():
 
 
 @app.get("/api/multiplicar")
+@app.get("/api/multiplicacion")
 def multiplicar():
     return _endpoint_operacion("multiplicar")
 
 
 @app.get("/api/dividir")
+@app.get("/api/division")
 def dividir():
     return _endpoint_operacion("dividir")
 
@@ -88,10 +110,12 @@ def potencia():
 def historial():
     return jsonify(historial=calculadora.historial())
 
+
 @app.get("/api/raiz")
 def raiz():
     return _endpoint_operacion("raiz_cuadrada")
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)

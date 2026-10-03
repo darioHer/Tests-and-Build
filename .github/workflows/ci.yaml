@@ -38,6 +38,9 @@ jobs:
         working-directory: ./src
         run: pytest
 
+      - name: Verify Docker build
+        run: docker build ./src
+
   build_and_push:
     needs: test
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -67,3 +70,11 @@ jobs:
           context: ./src # el Dockerfile está en src/, no en la raíz
           push: true
           tags: ${{ env.IMAGE }}
+
+      - name: Trigger Render Deploy Hook (optional)
+        if: env.RENDER_DEPLOY_HOOK != ''
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          echo "Disparando despliegue en Render vía Deploy Hook..."
+          curl -fsS -X POST "$RENDER_DEPLOY_HOOK"

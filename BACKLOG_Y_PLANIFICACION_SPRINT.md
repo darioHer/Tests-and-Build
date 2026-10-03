@@ -122,6 +122,49 @@ Historia original: #1 - Operaciones Avanzadas (Potencia y Raíz Cuadrada)
 
 ---
 
+### 2.4 Ejemplo 5 — Operación de Multiplicación y División (Auditoría y Descomposición)
+
+```yaml
+Historia original evaluada: Ejemplo 5 - Multiplicación y División con Manejo de Errores
+```
+
+#### ❌ Historia grande (Rechazar):
+> *"Como usuario, quiero que la calculadora soporte multiplicación y división con validación de errores (ej. división por cero)."*
+
+* **Causa de Rechazo:**
+  * **Violación de Tamaño:** Agrupa múltiples operaciones matemáticas (`*`, `/`), lógica de frontend, endpoints REST y tratamiento de excepciones de borde en una entrega monolítica.
+  * **Violación de TBD:** No permite despliegues continuos diarios a `main` sin riesgo de regresión ni rollouts independientes.
+
+#### ✅ División Correcta y Aplicada en 3 Tickets TBD:
+
+##### 📌 Ticket 1: Agregar método `multiplicacion()` a `Calculator` en `main.py` con test en `tests.py`, sin exponer en frontend
+* **Descripción:** Implementar la operación de multiplicación en la lógica de dominio bajo el feature flag `multiplicacion_enabled` (apagado por defecto) y suite de pruebas unitarias exhaustiva.
+* **¿Se puede integrar en $\le 1$ día?:** Sí ($\approx 1.5$ horas).
+* **Feature Toggle:** `multiplicacion_enabled` (`False` por defecto, fail-closed).
+* **Acceptance Criteria:**
+  * `Calculator(flag_on).multiplicacion(4, 3) == 12`.
+  * `Calculator(flag_off).multiplicacion(4, 3)` lanza `FeatureDisabledError`.
+  * Cero modificaciones en `index.html` o visibilidad pública para usuarios.
+
+##### 📌 Ticket 2: Exponer multiplicación en `index.html`/`script.js` detrás de un toggle al 10%
+* **Descripción:** Añadir endpoints `/api/multiplicar` y `/api/multiplicacion`, crear el bloque `#multiplicar-bloque` en la interfaz web y configurar en ConfigCat un porcentaje de rollout al 10% con targeting de usuario.
+* **¿Se puede integrar en $\le 1$ día?:** Sí ($\approx 2$ horas).
+* **Feature Toggle:** `multiplicacion_enabled` activado al 10% en ConfigCat.
+* **Acceptance Criteria:**
+  * Usuarios asignados al 10% visualizan y usan la multiplicación con registro en historial.
+  * Usuarios fuera del 10% no sufren alteraciones visuales ni errores JavaScript (404 silencioso).
+
+##### 📌 Ticket 3: Agregar `division()` con manejo de error por cero, completar la UI, y subir el flag al 100%
+* **Descripción:** Implementar `division()` en `Calculator` con validación estricta de división por cero (`DivisionPorCeroError`), exponer bloque `#dividir-bloque` en la interfaz web y promover los flags a disponibilidad total (100% GA).
+* **¿Se puede integrar en $\le 1$ día?:** Sí ($\approx 2.5$ horas).
+* **Feature Toggle:** `division_enabled` y `multiplicacion_enabled` al 100% en ConfigCat.
+* **Acceptance Criteria:**
+  * `Calculator(flag_on).division(10, 2) == 5.0`.
+  * `Calculator(flag_on).division(10, 0)` lanza `DivisionPorCeroError` y endpoint retorna `400 {"error": "division_por_cero"}`.
+  * Botones de multiplicación y división 100% operativos en producción para todos los usuarios.
+
+---
+
 ## 🏃 3. Planificación de Sprint Orientada a Flujo
 
 ### 3.1 Sprint Goal Orientado a TBD

@@ -1,6 +1,8 @@
 import os
 
 RESTA_FLAG = "resta_enabled"
+MULTIPLICACION_FLAG = "multiplicacion_enabled"
+DIVISION_FLAG = "division_enabled"
 POTENCIA_FLAG = "potencia_enabled"
 RAIZ_FLAG = "raiz_enabled"
 
@@ -15,11 +17,14 @@ class DivisionPorCeroError(Exception):
 
 class NumeroNegativoError(Exception):
     """Se intenta calcular la raíz cuadrada de un número negativo."""
-def configcat_flag(key: str, default: bool = False) -> bool:
+
+
+def configcat_flag(key: str, default: bool = False, user=None) -> bool:
     """Lee un feature flag de ConfigCat.
 
     Si no hay CONFIGCAT_SDK_KEY o ConfigCat falla, devuelve `default`
     (apagado), de modo que una caída del servicio nunca enciende una feature.
+    Soporta targeting de usuario (User) para rollouts porcentuales (ej. 10%).
     """
     sdk_key = os.environ.get("CONFIGCAT_SDK_KEY")
     if not sdk_key:
@@ -28,6 +33,14 @@ def configcat_flag(key: str, default: bool = False) -> bool:
         import configcatclient
 
         client = configcatclient.get(sdk_key)
+        if user is not None:
+            if isinstance(user, str):
+                from configcatclient.user import User
+
+                user_obj = User(identifier=user)
+            else:
+                user_obj = user
+            return bool(client.get_value(key, default, user=user_obj))
         return bool(client.get_value(key, default))
     except Exception:
         return default
@@ -44,6 +57,26 @@ class Calculator:
             raise FeatureDisabledError(
                 f"Esta operación está desactivada (flag '{RESTA_FLAG}')."
             )
+
+    def _requiere_multiplicacion_flag(self):
+        if self._flag(MULTIPLICACION_FLAG, False):
+            return
+        if self._flag(RESTA_FLAG, False):
+            return
+        raise FeatureDisabledError(
+            f"Esta operación está desactivada (flag '{MULTIPLICACION_FLAG}')."
+        )
+
+    def _requiere_division_flag(self):
+        if self._flag(DIVISION_FLAG, False):
+            return
+        if self._flag(MULTIPLICACION_FLAG, False):
+            return
+        if self._flag(RESTA_FLAG, False):
+            return
+        raise FeatureDisabledError(
+            f"Esta operación está desactivada (flag '{DIVISION_FLAG}')."
+        )
 
     def _requiere_potencia_flag(self):
         if not self._flag(POTENCIA_FLAG, False):
@@ -71,19 +104,25 @@ class Calculator:
         self._registrar("resta", a, b, resultado)
         return resultado
 
-    def multiplicar(self, a, b):
-        self._requiere_flag()
+    def multiplicacion(self, a, b, _nombre="multiplicacion"):
+        self._requiere_multiplicacion_flag()
         resultado = a * b
-        self._registrar("multiplicar", a, b, resultado)
+        self._registrar(_nombre, a, b, resultado)
         return resultado
 
-    def dividir(self, a, b):
-        self._requiere_flag()
+    def multiplicar(self, a, b):
+        return self.multiplicacion(a, b, _nombre="multiplicar")
+
+    def division(self, a, b, _nombre="division"):
+        self._requiere_division_flag()
         if b == 0:
             raise DivisionPorCeroError("No se puede dividir por cero.")
         resultado = a / b
-        self._registrar("dividir", a, b, resultado)
+        self._registrar(_nombre, a, b, resultado)
         return resultado
+
+    def dividir(self, a, b):
+        return self.division(a, b, _nombre="dividir")
 
     def potencia(self, a, b):
         self._requiere_potencia_flag()
