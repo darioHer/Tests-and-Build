@@ -26,7 +26,7 @@ El repositorio contiene los artefactos completos desarrollados para la adopción
 * **Lógica de Dominio:** Clase `Calculator` desacoplada con soporte de historial y manejo de excepciones de dominio (`DivisionPorCeroError`, `NumeroNegativoError`, `FeatureDisabledError`).
 * **Feature Flags:** Integración con SDK de **ConfigCat** con inyección de dependencias para testing desacoplado y seguro (*fail-closed*), con targeting por usuario para rollouts porcentuales (10% $\rightarrow$ 100%).
 * **Frontend:** HTML5 semántico + CSS3 responsivo + Vanilla JavaScript asíncrono con autodetección de flags activos.
-* **Calidad & Linter:** `ruff` (linter ultrarrápido) y `pytest` (suite completa de 49 pruebas unitarias y de integración).
+* **Calidad & Linter:** `ruff` (linter ultrarrápido) y `pytest` (suite completa de 66 pruebas unitarias y de integración).
 * **CI/CD & Empaquetado:** GitHub Actions con ejecución de pruebas automáticas, verificación de Docker build en PRs y publicación de imagen Docker inmutable en **GitHub Container Registry (GHCR)**.
 * **Despliegue Continuo (CD):** Auto-deploy continuo desde `main` a **Render** vía `render.yaml` con health check en `/health`.
 
@@ -82,14 +82,14 @@ pip install -r src/requirements.txt
 # Ejecutar verificación de estilo y linters
 ruff check src/
 
-# Ejecutar la suite completa de 38 pruebas unitarias y de integración
+# Ejecutar la suite completa de 66 pruebas unitarias y de integración
 pytest src/
 ```
 
 ### 3. Iniciar el Servidor de Desarrollo
 ```bash
 python src/app.py
-# Acceder a http://localhost:5000 en el navegador
+# Acceder a http://localhost:5000 o http://localhost:5000/blog en el navegador
 ```
 
 ---
