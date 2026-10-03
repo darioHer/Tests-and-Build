@@ -41,6 +41,7 @@ El repositorio contiene los artefactos completos desarrollados para la adopción
 | `division_enabled` | División ($a / b$) con control de cero | 100% (GA) | Retorna `404 {"error": "feature_disabled"}` y oculta controles en UI. |
 | `potencia_enabled` | Potenciación ($a^b$) | 100% (GA) | Retorna `404 {"error": "feature_disabled"}` y oculta controles en UI. |
 | `raiz_enabled` | Raíz Cuadrada ($\sqrt{a}$) | 100% (GA) | Retorna `404 {"error": "feature_disabled"}` y oculta controles en UI. |
+| `comments_enabled` | Sistema de Comentarios en Blog | 0% (Ticket 1) $\rightarrow$ 10% (Ticket 2) $\rightarrow$ 100% (Ticket 3) | Retorna `404 {"error": "feature_disabled"}` y oculta formulario/comentarios. |
 
 ---
 
@@ -49,6 +50,7 @@ El repositorio contiene los artefactos completos desarrollados para la adopción
 | Método | Endpoint | Parámetros | Descripción | Código Éxito |
 | :--- | :--- | :--- | :--- | :---: |
 | `GET` | `/` | Ninguno | Sirve la interfaz web estática de la calculadora | `200 OK` |
+| `GET` | `/blog` | Ninguno | Sirve la interfaz interactiva del Blog con comentarios TBD | `200 OK` |
 | `GET` | `/health` | Ninguno | Health check para orquestadores y Render | `200 OK` |
 | `GET` | `/api/sumar` | `?a=<num>&b=<num>` | Suma de dos números (siempre disponible) | `200 OK` |
 | `GET` | `/api/resta` | `?a=<num>&b=<num>` | Resta ($a - b$) detrás de `resta_enabled` | `200 OK` |
@@ -57,6 +59,9 @@ El repositorio contiene los artefactos completos desarrollados para la adopción
 | `GET` | `/api/potencia` | `?a=<num>&b=<num>&user_id=<id>` | Potenciación ($a^b$) detrás de `potencia_enabled` | `200 OK` |
 | `GET` | `/api/raiz` | `?a=<num>&user_id=<id>` | Raíz cuadrada ($\sqrt{a}$) con validación $a \ge 0$ | `200 OK` |
 | `GET` | `/api/historial` | Ninguno | Retorna el historial de operaciones realizadas | `200 OK` |
+| `GET` | `/api/articles` | Ninguno | Retorna los artículos del Blog | `200 OK` |
+| `POST` | `/api/articles/{id}/comments` | `{"author", "content", "parent_id"}` | Guarda comentario (Ticket 1 & 3) detrás de `comments_enabled` | `201 Created` |
+| `GET` | `/api/articles/{id}/comments` | `?user_id=<id>` | Retorna comentarios anidados (Ticket 2 & 3) | `200 OK` |
 
 
 ---

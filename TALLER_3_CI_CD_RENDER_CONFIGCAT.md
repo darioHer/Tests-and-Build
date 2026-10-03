@@ -128,10 +128,41 @@
 
 ---
 
+### 2.3 Auditoría Específica de Ejemplo 2 (Sistema de Comentarios en un Blog)
+
+#### ❌ Historia Grande (Rechazada)
+> *"Como lector, quiero poder comentar en los artículos y responder a otros comentarios."*
+
+* **Diagnóstico:** Viola el principio de integración diaria de Trunk-Based Development. Trata de construir en un único commit el modelo de datos, la API REST, la visualización en frontend, el formulario de escritura y la recursión de hilos de respuestas (*nested replies*).
+
+#### ✅ División Correcta Aplicada y Verificada (3 Tickets TBD)
+
+##### 📌 Ticket 1: Modelo de datos Comment + endpoint POST /articles/{id}/comments detrás de comments_enabled = false
+* **Implementación:**
+  * Clase `Comment` con atributos `id`, `article_id`, `author`, `content`, `parent_id` y `created_at` en [`src/main.py`](./src/main.py).
+  * `CommentService.add_comment()` protegido por `COMMENTS_FLAG = "comments_enabled"` (fail-closed).
+  * Endpoint `POST /api/articles/<id>/comments` respondiendo `201 Created` cuando el flag está encendido o `404 {"error": "feature_disabled"}` si está apagado.
+  * **Cero exposición en frontend:** El código se encuentra en producción en `main` sin alterar la experiencia del usuario.
+
+##### 📌 Ticket 2: Mostrar comentarios existentes (solo lectura) en la página del artículo, flag al 10%
+* **Implementación:**
+  * Endpoint `GET /api/articles/<id>/comments` con ensamblado jerárquico de comentarios.
+  * Página [`src/static/blog.html`](./src/static/blog.html) con visualización de comentarios existentes en modo solo lectura.
+  * Estrategia ConfigCat: Targeting del 10% de lectores con `User(identifier)`. Usuarios fuera del 10% observan la interfaz intacta sin botones ni errores de consola.
+
+##### 📌 Ticket 3: Formulario para comentar y respuestas anidadas, flag al 100%
+* **Implementación:**
+  * Formulario de escritura interactivo en [`src/static/blog.html`](./src/static/blog.html).
+  * Botón *"Responder"* en cada comentario que despliega un sub-formulario para enviar respuestas asociadas al `parent_id`.
+  * Renderizado recursivo de árbol con sangría e hilos visuales conectores.
+  * Promoción del Feature Flag `comments_enabled` al 100% en ConfigCat (General Availability).
+
+---
+
 ## 🧪 3. Automatización de Pruebas y Robustez del CI
 
 ### 3.1 Mínimo Viable de Calidad del Pipeline
-1. **Tests Unitarios Obligatorios:** `pytest` con 49 pruebas cubriendo dominios, casos felices y casos extremos.
+1. **Tests Unitarios Obligatorios:** `pytest` con 64 pruebas cubriendo dominios, casos felices y casos extremos (Calculadora + Comentarios).
 2. **Lint & Análisis Estático:** `ruff check .` con reglas estrictas de PEP 8 y detección de código muerto.
 3. **Verificación Docker en PRs:** `docker build ./src` como paso obligatorio de validación antes del merge.
 4. **Construcción y Push Inmutable:** Publicación en GHCR (`ghcr.io/darioher/tests-and-build:latest`) tras cada merge a `main`.

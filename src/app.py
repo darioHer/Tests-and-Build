@@ -17,7 +17,13 @@ import os
 from flask import Flask, jsonify, request, send_from_directory
 
 import main
-from main import Calculator, DivisionPorCeroError, FeatureDisabledError, NumeroNegativoError
+from main import (
+    Calculator,
+    CommentService,
+    DivisionPorCeroError,
+    FeatureDisabledError,
+    NumeroNegativoError,
+)
 
 
 def _current_flag_provider(key, default=False):
@@ -32,9 +38,9 @@ def _current_flag_provider(key, default=False):
         return main.configcat_flag(key, default)
 
 
-# Una sola instancia para toda la app: así el historial acumula operaciones
-# entre requests dentro del mismo proceso (se pierde si el proceso reinicia).
+# Instancias compartidas para toda la app (calculadora y comentarios)
 calculadora = Calculator(flag_provider=_current_flag_provider)
+comment_service = CommentService(flag_provider=_current_flag_provider)
 
 app = Flask(__name__, static_folder="static", static_url_path="")
 
@@ -114,6 +120,84 @@ def historial():
 @app.get("/api/raiz")
 def raiz():
     return _endpoint_operacion("raiz_cuadrada")
+
+
+# ==============================================================================
+# Rutas del Blog y Sistema de Comentarios (Ejemplo 2)
+# ==============================================================================
+
+SAMPLE_ARTICLES = [
+    {
+        "id": "1",
+        "title": "Trunk-Based Development & Feature Flags en Producción",
+        "author": "Ingeniería de Software",
+        "date": "2026-10-03",
+        "summary": "Cómo pasar de ramas eternas y dolorosas a integraciones continuas diarias desplegando a producción con ConfigCat y Render.",
+        "content": """Trunk-Based Development (TBD) es el estándar de oro en ingeniería de software moderna para entrega continua.
+En lugar de mantener ramas de características que viven durante semanas o meses acumulando discrepancias, los desarrolladores integran ramas de vida corta (< 24 horas) directamente sobre la rama principal `main`.
+
+El secreto para integrar código incompleto o experimental sin romper la experiencia del usuario radica en los Feature Flags (o Feature Toggles).
+Con herramientas como ConfigCat, desacoplamos completamente el Despliegue (*Deploy*) del Lanzamiento (*Release*).
+Esto permite realizar rollouts canary (10% -> 50% -> 100%) y activar funcionalidades al instante desde un dashboard central sin tener que re-compilar ni re-desplegar contenedores Docker.""",
+    }
+]
+
+
+@app.get("/blog")
+def blog():
+    """Sirve la página web del Blog con interfaz de comentarios."""
+    return send_from_directory(app.static_folder, "blog.html")
+
+
+@app.get("/api/articles")
+def get_articles():
+    """Retorna la lista de artículos del blog."""
+    return jsonify(articles=SAMPLE_ARTICLES)
+
+
+@app.get("/api/articles/<article_id>")
+def get_article(article_id):
+    """Retorna un artículo específico por su ID."""
+    article = next((a for a in SAMPLE_ARTICLES if a["id"] == str(article_id)), None)
+    if not article:
+        return jsonify(error="article_not_found"), 404
+    return jsonify(article=article)
+
+
+@app.post("/articles/<article_id>/comments")
+@app.post("/api/articles/<article_id>/comments")
+def post_comment(article_id):
+    """Ticket 1: Guardar comentario detrás del flag comments_enabled.
+    Ticket 3: Admite parent_id para respuestas anidadas.
+    """
+    data = request.get_json(silent=True) or request.form.to_dict()
+    author = data.get("author")
+    content = data.get("content")
+    parent_id = data.get("parent_id")
+
+    try:
+        new_comment = comment_service.add_comment(
+            article_id=article_id,
+            author=author,
+            content=content,
+            parent_id=parent_id,
+        )
+        return jsonify(comment=new_comment.to_dict()), 201
+    except FeatureDisabledError:
+        return jsonify(error="feature_disabled", message="Comentarios desactivados."), 404
+    except ValueError as exc:
+        return jsonify(error="invalid_params", message=str(exc)), 400
+
+
+@app.get("/articles/<article_id>/comments")
+@app.get("/api/articles/<article_id>/comments")
+def get_comments_endpoint(article_id):
+    """Ticket 2: Retorna comentarios existentes (solo lectura) detrás del flag."""
+    try:
+        comments = comment_service.get_comments(article_id)
+        return jsonify(comments=comments), 200
+    except FeatureDisabledError:
+        return jsonify(error="feature_disabled", message="Comentarios desactivados."), 404
 
 
 if __name__ == "__main__":

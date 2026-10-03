@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog TBD — Sistema de Comentarios con Feature Toggles</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #38bdf8;
+      --primary-hover: #0ea5e9;
+      --accent: #818cf8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --input-bg: #1e293b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(circle at top right, #1e1b4b, #0f172a 60%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem 1rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 850px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* Header & Nav */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0.4rem 0.8rem;
+      border-radius: 0.5rem;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .nav-link:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-link.active {
+      color: var(--primary);
+      background: rgba(56, 189, 248, 0.1);
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.65rem;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      font-size: 0.8rem;
+    }
+
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 1rem;
+      padding: 1.75rem;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Article styling */
+    .article-meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .article-title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      line-height: 1.3;
+      margin-bottom: 1.25rem;
+      background: linear-gradient(135deg, #f8fafc, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .article-body {
+      font-size: 1.02rem;
+      line-height: 1.75;
+      color: #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    /* Feature Flag Switcher / Simulator Panel */
+    .simulator-card {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px dashed rgba(129, 140, 248, 0.4);
+      border-radius: 0.75rem;
+      padding: 1.2rem;
+    }
+
+    .simulator-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.8rem;
+    }
+
+    .simulator-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .simulator-buttons {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-toggle {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 0.4rem 0.85rem;
+      border-radius: 0.4rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-toggle:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-toggle.active {
+      border-color: var(--primary);
+      background: rgba(56, 189, 248, 0.2);
+      color: var(--primary);
+    }
+
+    /* Comments Section */
+    .comments-card {
+      margin-top: 0.5rem;
+    }
+
+    .comments-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .banner {
+      padding: 1rem 1.25rem;
+      border-radius: 0.65rem;
+      font-size: 0.9rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      line-height: 1.5;
+    }
+
+    .banner-danger { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; }
+    .banner-warning { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #fcd34d; }
+    .banner-success { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #6ee7b7; }
+
+    /* Comment Form */
+    .comment-form {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--card-border);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .comment-form input,
+    .comment-form textarea {
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 0.4rem;
+      color: #fff;
+      font-size: 0.9rem;
+      padding: 0.6rem 0.8rem;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .comment-form input:focus,
+    .comment-form textarea:focus {
+      border-color: var(--primary);
+    }
+
+    .comment-form textarea {
+      resize: vertical;
+      min-height: 70px;
+    }
+
+    .btn-submit {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: #fff;
+      border: none;
+      border-radius: 0.45rem;
+      padding: 0.5rem 1.25rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-submit:hover {
+      background: linear-gradient(135deg, #0369a1, #1d4ed8);
+      transform: translateY(-1px);
+    }
+
+    /* Comment List */
+    .comments-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .comment-item {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 0.65rem;
+      padding: 1rem 1.2rem;
+      position: relative;
+    }
+
+    .comment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .comment-author {
+      font-weight: 700;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .comment-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .comment-time {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .comment-content {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+
+    .comment-actions {
+      margin-top: 0.65rem;
+    }
+
+    .btn-reply {
+      background: transparent;
+      border: none;
+      color: var(--primary);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .btn-reply:hover {
+      text-decoration: underline;
+    }
+
+    /* Nested Replies (Ticket 3) */
+    .replies-thread {
+      margin-left: 2rem;
+      margin-top: 0.75rem;
+      padding-left: 0.75rem;
+      border-left: 2px solid rgba(56, 189, 248, 0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .reply-form-container {
+      margin-top: 0.5rem;
+      margin-left: 2rem;
+    }
+
+    .empty-comments {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      padding: 2rem 0;
+      font-style: italic;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="nav-links">
+        <a href="/" class="nav-link">⚡ Calculadora CI/CD</a>
+        <a href="/blog" class="nav-link active">📝 Blog TBD</a>
+      </div>
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <span class="badge">
+          <span class="badge-dot"></span>
+          <span id="health-text">API Online</span>
+        </span>
+        <span class="badge" title="ID del usuario activo">
+          User: <span id="user-display" style="font-family: monospace;">...</span>
+        </span>
+      </div>
+    </header>
+
+    <!-- Blog Article -->
+    <article class="card">
+      <div class="article-meta">
+        <span>📅 3 de Octubre, 2026</span>
+        <span>•</span>
+        <span>✍️ Ingeniería de Software</span>
+        <span>•</span>
+        <span style="color: var(--primary);">🏷️ TBD + ConfigCat + Render</span>
+      </div>
+      <h1 class="article-title">Trunk-Based Development & Feature Flags en Producción</h1>
+      <div class="article-body">
+        <p>
+          En los equipos de alto desempeño, el cuello de botella tradicional casi nunca es la capacidad técnica de escribir código, sino la <strong>frecuencia y tamaño del lote de integración</strong>.
+        </p>
+        <p>
+          Mantener ramas de desarrollo durante semanas o meses genera desalineación constante, pruebas tardías y el temido <em>"merge hell"</em>. La adopción de <strong>Trunk-Based Development (TBD)</strong> erradica este problema al promover ramas de vida corta (&lt; 24 horas) que convergen a diario sobre <code>main</code>.
+        </p>
+        <p>
+          Para integrar código en progreso de manera segura sin afectar la experiencia de los lectores, se implementan <strong>Feature Toggles (Feature Flags)</strong>. En este artículo, el sistema de comentarios es un ejemplo vivo de sliceado vertical desacoplado.
+        </p>
+      </div>
+    </article>
+
+    <!-- Simulator & Live State Controller -->
+    <div class="simulator-card">
+      <div class="simulator-header">
+        <div class="simulator-title">
+          <span>🚩</span>
+          <span>Controlador del Feature Toggle: <code>comments_enabled</code></span>
+        </div>
+        <div class="simulator-buttons">
+          <button id="sim-off" class="btn-toggle" title="Ticket 1: Flag desactivado">🔴 0% (OFF)</button>
+          <button id="sim-canary" class="btn-toggle" title="Ticket 2: Solo lectura al 10%">🟡 10% (Canary - Lectura)</button>
+          <button id="sim-ga" class="btn-toggle active" title="Ticket 3: Comentar + Respuestas al 100%">🟢 100% (GA Completo)</button>
+        </div>
+      </div>
+      <div style="font-size: 0.78rem; color: #94a3b8; line-height: 1.4;">
+        Usa estos selectores para probar en vivo los 3 tickets de Ejemplo 2. En producción, este comportamiento lo gobierna <strong>ConfigCat</strong> en tiempo real sin re-desplegar código.
+      </div>
+    </div>
+
+    <!-- Comments Card -->
+    <section class="card comments-card">
+      <div class="comments-title">
+        <span>Comentarios del Artículo</span>
+        <span id="comments-count" style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);">Cargando...</span>
+      </div>
+
+      <!-- Banner de Estado Dinámico -->
+      <div id="state-banner" class="banner banner-success">
+        <span>🟢</span>
+        <div>
+          <strong>Disponibilidad General (100% GA - Ticket 3):</strong>
+          Puedes leer los comentarios, publicar nuevas opiniones y responder a comentarios existentes de forma anidada.
+        </div>
+      </div>
+
+      <!-- Formulario para Nuevo Comentario (Ticket 3) -->
+      <form id="comment-form" class="comment-form">
+        <div class="form-row">
+          <input id="input-author" type="text" placeholder="Tu nombre o alias" required style="width: 240px;" />
+        </div>
+        <textarea id="input-content" placeholder="Escribe tu comentario sobre Trunk-Based Development..." required></textarea>
+        <button type="submit" class="btn-submit">Publicar Comentario</button>
+      </form>
+
+      <!-- Lista de Comentarios -->
+      <div id="comments-list" class="comments-list">
+        <!-- Renderizado dinámico -->
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      Taller 3: CI/CD, Automatización de Pruebas y Cierre de Pendientes (Render + ConfigCat)
+    </footer>
+  </div>
+
+  <script>
+    const ARTICLE_ID = "1";
+    let simulatedState = "100"; // "0", "10", "100"
+
+    function getUserId() {
+      let userId = localStorage.getItem("tbd_user_id");
+      if (!userId) {
+        userId = "user_" + Math.random().toString(36).substring(2, 8);
+        localStorage.setItem("tbd_user_id", userId);
+      }
+      return userId;
+    }
+
+    document.getElementById("user-display").textContent = getUserId();
+
+    const bannerEl = document.getElementById("state-banner");
+    const formEl = document.getElementById("comment-form");
+    const listEl = document.getElementById("comments-list");
+    const countEl = document.getElementById("comments-count");
+
+    // Botones del Simulador
+    document.getElementById("sim-off").addEventListener("click", () => setSimulationState("0"));
+    document.getElementById("sim-canary").addEventListener("click", () => setSimulationState("10"));
+    document.getElementById("sim-ga").addEventListener("click", () => setSimulationState("100"));
+
+    function setSimulationState(state) {
+      simulatedState = state;
+      document.querySelectorAll(".btn-toggle").forEach(btn => btn.classList.remove("active"));
+      if (state === "0") document.getElementById("sim-off").classList.add("active");
+      if (state === "10") document.getElementById("sim-canary").classList.add("active");
+      if (state === "100") document.getElementById("sim-ga").classList.add("active");
+
+      renderStateUI();
+      cargarComentarios();
+    }
+
+    function renderStateUI() {
+      if (simulatedState === "0") {
+        bannerEl.className = "banner banner-danger";
+        bannerEl.innerHTML = `
+          <span>🔒</span>
+          <div>
+            <strong>Comentarios Desactivados (0% OFF - Ticket 1):</strong>
+            El feature flag <code>comments_enabled</code> está apagado. El endpoint POST guarda internamente en el backend pero la interfaz oculta los comentarios y el formulario.
+          </div>
+        `;
+        formEl.style.display = "none";
+        listEl.innerHTML = '<div class="empty-comments">La sección de comentarios está temporalmente deshabilitada por configuración.</div>';
+        countEl.textContent = "Desactivado";
+      } else if (simulatedState === "10") {
+        bannerEl.className = "banner banner-warning";
+        bannerEl.innerHTML = `
+          <span>🟡</span>
+          <div>
+            <strong>Modo Solo Lectura (10% Canary - Ticket 2):</strong>
+            Perteneces a la cohorte del 10%. Puedes leer los comentarios existentes en tiempo real. El formulario para nuevos comentarios no está expuesto.
+          </div>
+        `;
+        formEl.style.display = "none";
+      } else {
+        bannerEl.className = "banner banner-success";
+        bannerEl.innerHTML = `
+          <span>🟢</span>
+          <div>
+            <strong>Disponibilidad General (100% GA - Ticket 3):</strong>
+            Sistema completo activo para todos los usuarios. Puedes comentar y responder de manera anidada a otros hilos.
+          </div>
+        `;
+        formEl.style.display = "flex";
+      }
+    }
+
+    async function cargarComentarios() {
+      if (simulatedState === "0") return;
+
+      try {
+        const resp = await fetch(`/api/articles/${ARTICLE_ID}/comments?user_id=${getUserId()}`);
+        if (!resp.ok) {
+          listEl.innerHTML = '<div class="empty-comments">No se pudieron cargar los comentarios (Flag desactivado en servidor).</div>';
+          countEl.textContent = "0 comentarios";
+          return;
+        }
+
+        const data = await resp.json();
+        const comments = data.comments || [];
+        renderCommentsTree(comments);
+      } catch {
+        listEl.innerHTML = '<div class="empty-comments">Error de red al conectar con el servidor.</div>';
+      }
+    }
+
+    function renderCommentsTree(comments) {
+      listEl.innerHTML = "";
+      let totalCount = 0;
+
+      function countRecursive(list) {
+        for (const c of list) {
+          totalCount++;
+          if (c.replies) countRecursive(c.replies);
+        }
+      }
+      countRecursive(comments);
+      countEl.textContent = `${totalCount} comentario${totalCount === 1 ? "" : "s"}`;
+
+      if (comments.length === 0) {
+        listEl.innerHTML = '<div class="empty-comments">Sé el primero en comentar este artículo.</div>';
+        return;
+      }
+
+      for (const comment of comments) {
+        listEl.appendChild(crearElementoComentario(comment));
+      }
+    }
+
+    function crearElementoComentario(comment) {
+      const item = document.createElement("div");
+      item.className = "comment-item";
+
+      const inicial = (comment.author || "A")[0].toUpperCase();
+      const fecha = new Date(comment.created_at).toLocaleDateString("es-ES", {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+      item.innerHTML = `
+        <div class="comment-header">
+          <div class="comment-author">
+            <span class="comment-avatar">${inicial}</span>
+            <span>${escapeHTML(comment.author)}</span>
+          </div>
+          <span class="comment-time">${fecha}</span>
+        </div>
+        <div class="comment-content">${escapeHTML(comment.content)}</div>
+        ${simulatedState === "100" ? `
+          <div class="comment-actions">
+            <button class="btn-reply" onclick="toggleReplyBox('${comment.id}')">↩ Responder</button>
+          </div>
+          <div id="reply-box-${comment.id}" class="reply-form-container" style="display: none;">
+            <div class="comment-form" style="margin-bottom: 0.5rem; background: rgba(15, 23, 42, 0.9);">
+              <input type="text" id="reply-author-${comment.id}" placeholder="Tu nombre" style="width: 180px;" />
+              <textarea id="reply-content-${comment.id}" placeholder="Escribe tu respuesta..." style="min-height: 50px;"></textarea>
+              <button type="button" class="btn-submit" onclick="enviarRespuesta('${comment.id}')">Enviar Respuesta</button>
+            </div>
+          </div>
+        ` : ""}
+      `;
+
+      // Respuestas anidadas (Ticket 3)
+      if (comment.replies && comment.replies.length > 0) {
+        const thread = document.createElement("div");
+        thread.className = "replies-thread";
+        for (const reply of comment.replies) {
+          thread.appendChild(crearElementoComentario(reply));
+        }
+        item.appendChild(thread);
+      }
+
+      return item;
+    }
+
+    window.toggleReplyBox = function(commentId) {
+      const box = document.getElementById(`reply-box-${commentId}`);
+      if (box) {
+        box.style.display = box.style.display === "none" ? "block" : "none";
+      }
+    };
+
+    window.enviarRespuesta = async function(parentId) {
+      const authorInput = document.getElementById(`reply-author-${parentId}`);
+      const contentInput = document.getElementById(`reply-content-${parentId}`);
+
+      const author = authorInput.value.trim();
+      const content = contentInput.value.trim();
+      if (!author || !content) return;
+
+      const resp = await fetch(`/api/articles/${ARTICLE_ID}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ author, content, parent_id: parentId })
+      });
+
+      if (resp.ok) {
+        authorInput.value = "";
+        contentInput.value = "";
+        cargarComentarios();
+      } else {
+        alert("No se pudo publicar la respuesta (comprueba el estado del Feature Flag).");
+      }
+    };
+
+    formEl.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const author = document.getElementById("input-author").value.trim();
+      const content = document.getElementById("input-content").value.trim();
+      if (!author || !content) return;
+
+      const resp = await fetch(`/api/articles/${ARTICLE_ID}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ author, content })
+      });
+
+      if (resp.ok) {
+        document.getElementById("input-content").value = "";
+        cargarComentarios();
+      } else {
+        alert("No se pudo publicar el comentario.");
+      }
+    });
+
+    function escapeHTML(str) {
+      return (str || "").replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+      );
+    }
+
+    // Inicializar
+    renderStateUI();
+    cargarComentarios();
+  </script>
+</body>
+</html>

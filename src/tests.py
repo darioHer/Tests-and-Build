@@ -4,10 +4,13 @@ import types
 import pytest
 
 from main import (
+    COMMENTS_FLAG,
     DIVISION_FLAG,
     MULTIPLICACION_FLAG,
     RESTA_FLAG,
     Calculator,
+    Comment,
+    CommentService,
     DivisionPorCeroError,
     FeatureDisabledError,
     NumeroNegativoError,
@@ -209,4 +212,81 @@ def test_ticket3_division_consulta_flag_division_enabled():
         return True
 
     Calculator(flag_provider=spy).division(8, 2)
-    assert pedidos[0] == DIVISION_FLAG
+    assert pedidos[0] == DIVISION_FLAG
+
+
+# ==============================================================================
+# Tests Ejemplo 2 — Sistema de Comentarios en Blog (Tickets 1, 2 y 3)
+# ==============================================================================
+
+def test_ejemplo2_ticket1_guardar_comentario_con_flag_encendido():
+    service = CommentService(flag_provider=flag_on)
+    c = service.add_comment(article_id="10", author="Tester", content="Comentario válido")
+    assert c.id.startswith("c_")
+    assert c.article_id == "10"
+    assert c.author == "Tester"
+    assert c.content == "Comentario válido"
+    assert c.parent_id is None
+
+
+def test_ejemplo2_ticket1_guardar_comentario_con_flag_apagado_lanza_error():
+    service = CommentService(flag_provider=flag_off)
+    with pytest.raises(FeatureDisabledError):
+        service.add_comment(article_id="10", author="Tester", content="No debe guardarse")
+
+
+def test_ejemplo2_ticket1_guardar_comentario_valida_autor_y_contenido():
+    service = CommentService(flag_provider=flag_on)
+    with pytest.raises(ValueError):
+        service.add_comment(article_id="10", author="", content="Texto")
+    with pytest.raises(ValueError):
+        service.add_comment(article_id="10", author="Autor", content="   ")
+
+
+def test_ejemplo2_ticket2_obtener_comentarios_con_flag_encendido():
+    service = CommentService(flag_provider=flag_on)
+    comments = service.get_comments("1")
+    assert len(comments) >= 1
+    # Verifica que el comentario raíz tiene el contenido del seed
+    assert comments[0]["author"] == "Carlos Dev"
+    assert len(comments[0]["replies"]) >= 1
+    assert comments[0]["replies"][0]["author"] == "Ana Tech"
+
+
+def test_ejemplo2_ticket2_obtener_comentarios_con_flag_apagado_lanza_error():
+    service = CommentService(flag_provider=flag_off)
+    with pytest.raises(FeatureDisabledError):
+        service.get_comments("1")
+
+
+def test_ejemplo2_ticket3_respuesta_anidada_con_parent_id():
+    service = CommentService(flag_provider=flag_on)
+    parent = service.add_comment(article_id="2", author="Laura", content="Pregunta sobre CI/CD")
+    reply = service.add_comment(article_id="2", author="Dario", content="Respuesta detallada", parent_id=parent.id)
+
+    comments = service.get_comments("2")
+    assert len(comments) == 1
+    assert comments[0]["id"] == parent.id
+    assert len(comments[0]["replies"]) == 1
+    assert comments[0]["replies"][0]["id"] == reply.id
+    assert comments[0]["replies"][0]["parent_id"] == parent.id
+
+
+def test_ejemplo2_ticket1_comment_consulta_flag_comments_enabled():
+    pedidos = []
+
+    def spy(key, default=False):
+        pedidos.append(key)
+        return True
+
+    CommentService(flag_provider=spy).add_comment("1", "Tester", "Contenido")
+    assert pedidos[0] == COMMENTS_FLAG
+
+
+def test_comment_model_properties():
+    c = Comment(id="c_99", article_id="1", author="Ana", content="Hola")
+    assert c.id == "c_99"
+    assert c.author == "Ana"
+    assert c.to_dict()["id"] == "c_99"
+
+

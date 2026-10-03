@@ -165,6 +165,51 @@ Historia original evaluada: Ejemplo 5 - Multiplicación y División con Manejo d
 
 ---
 
+### 2.5 Ejemplo 2 — Sistema de Comentarios en un Blog (Auditoría y Descomposición)
+
+```yaml
+Historia original evaluada: Ejemplo 2 - Sistema de Comentarios en Blog con Respuestas Anidadas
+```
+
+#### ❌ Historia grande (Rechazar):
+> *"Como lector, quiero poder comentar en los artículos y responder a otros comentarios."*
+
+* **Causa de Rechazo:**
+  * **Violación de Tamaño:** Intenta construir en una sola entrega el modelo de base de datos/entidad, API REST, validación, UI de visualización, formulario interactivo de envío y la complejidad de hilos de respuestas recursivas (*nested replies*).
+  * **Violación de TBD:** Retrasa el despliegue a `main` durante días mientras se lidia con la UI y las respuestas jerárquicas, bloqueando la integración temprana del backend.
+
+#### ✅ División Correcta y Aplicada en 3 Tickets TBD:
+
+##### 📌 Ticket 1: Modelo de datos Comment + endpoint POST /articles/{id}/comments detrás de comments_enabled = false
+* **Descripción:** Diseñar la clase de dominio `Comment` y el endpoint `POST /articles/{id}/comments` que valida autor y contenido y persiste comentarios en memoria, completamente protegido por el Feature Flag `comments_enabled` (apagado por defecto). Sin cambios ni exposición en el frontend.
+* **¿Se puede integrar en $\le 1$ día?:** Sí ($\approx 2$ horas).
+* **Feature Toggle:** `comments_enabled` (`False` por defecto en ConfigCat).
+* **Acceptance Criteria:**
+  * `POST /articles/1/comments` retorna `201 {"comment": {...}}` si el flag está activo.
+  * Si el flag está apagado, retorna `404 {"error": "feature_disabled"}` (fail-closed).
+  * Parámetros vacíos retornan `400 {"error": "invalid_params"}`.
+  * Cero elementos visuales expuestos en el blog para lectores.
+
+##### 📌 Ticket 2: Mostrar comentarios existentes (solo lectura) en la página del artículo, flag al 10%
+* **Descripción:** Implementar el endpoint `GET /articles/{id}/comments` y renderizar la lista de comentarios en `blog.html` en modo lectura para una cohorte Canary del 10% de lectores, sin habilitar el formulario de envío.
+* **¿Se puede integrar en $\le 1$ día?:** Sí ($\approx 2$ horas).
+* **Feature Toggle:** `comments_enabled` configurado al 10% de rollout en ConfigCat con targeting de `User(identifier)`.
+* **Acceptance Criteria:**
+  * Usuarios asignados al 10% ven los comentarios existentes con autor y fecha formateada.
+  * Usuarios en el 90% restante ven el banner de sección protegida sin errores JavaScript.
+  * El formulario de envío de comentarios sigue oculto.
+
+##### 📌 Ticket 3: Agregar formulario para comentar y respuestas anidadas, flag al 100%
+* **Descripción:** Incorporar el formulario interactivo para escribir comentarios en `blog.html`, habilitar el botón "Responder" en cada comentario para generar hilos anidados (`parent_id`) y elevar el flag al 100% de los usuarios.
+* **¿Se puede integrar en $\le 1$ día?:** Sí ($\approx 3$ horas).
+* **Feature Toggle:** `comments_enabled` al 100% en ConfigCat (General Availability).
+* **Acceptance Criteria:**
+  * Los lectores pueden enviar comentarios que aparecen de inmediato en el hilo.
+  * Respuestas anidadas se renderizan indentadas con borde visual conectando al comentario padre.
+  * Todo el flujo validado en producción y CI verde.
+
+---
+
 ## 🏃 3. Planificación de Sprint Orientada a Flujo
 
 ### 3.1 Sprint Goal Orientado a TBD

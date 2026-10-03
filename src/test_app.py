@@ -9,9 +9,11 @@ from app import app
 @pytest.fixture
 def client():
     app.config.update(TESTING=True)
-    # La calculadora es compartida entre requests (para acumular historial),
-    # así que se reinicia en cada test para que no se pisen entre sí.
+    # La calculadora y el servicio de comentarios se reinician en cada test
     app_module.calculadora = main_module.Calculator(
+        flag_provider=lambda key, default=False: main_module.configcat_flag(key, default)
+    )
+    app_module.comment_service = main_module.CommentService(
         flag_provider=lambda key, default=False: main_module.configcat_flag(key, default)
     )
     return app.test_client()
@@ -161,4 +163,74 @@ def test_division_endpoint_alias_por_cero(client, monkeypatch):
     resp = client.get("/api/division?a=20&b=0")
     assert resp.status_code == 400
     assert resp.get_json()["error"] == "division_por_cero"
+
+
+# ==============================================================================
+# Tests de Endpoints del Sistema de Comentarios (Ejemplo 2)
+# ==============================================================================
+
+def test_post_comment_endpoint_con_flag_encendido(client, monkeypatch):
+    monkeypatch.setattr(main_module, "configcat_flag", lambda key, default=False: True)
+    payload = {"author": "Tester", "content": "Gran artículo sobre CI/CD"}
+    resp = client.post("/api/articles/1/comments", json=payload)
+    assert resp.status_code == 201
+    data = resp.get_json()
+    assert "comment" in data
+    assert data["comment"]["author"] == "Tester"
+    assert data["comment"]["article_id"] == "1"
+
+
+def test_post_comment_endpoint_con_flag_apagado(client, monkeypatch):
+    monkeypatch.setattr(main_module, "configcat_flag", lambda key, default=False: False)
+    payload = {"author": "Tester", "content": "Gran artículo"}
+    resp = client.post("/api/articles/1/comments", json=payload)
+    assert resp.status_code == 404
+    assert resp.get_json()["error"] == "feature_disabled"
+
+
+def test_post_comment_endpoint_datos_invalidos(client, monkeypatch):
+    monkeypatch.setattr(main_module, "configcat_flag", lambda key, default=False: True)
+    resp = client.post("/api/articles/1/comments", json={"author": "", "content": "Texto"})
+    assert resp.status_code == 400
+    assert resp.get_json()["error"] == "invalid_params"
+
+
+def test_get_comments_endpoint_con_flag_encendido(client, monkeypatch):
+    monkeypatch.setattr(main_module, "configcat_flag", lambda key, default=False: True)
+    resp = client.get("/api/articles/1/comments")
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert "comments" in data
+    assert len(data["comments"]) >= 1
+
+
+def test_get_comments_endpoint_con_flag_apagado(client, monkeypatch):
+    monkeypatch.setattr(main_module, "configcat_flag", lambda key, default=False: False)
+    resp = client.get("/api/articles/1/comments")
+    assert resp.status_code == 404
+    assert resp.get_json()["error"] == "feature_disabled"
+
+
+def test_get_articles_endpoint(client):
+    resp = client.get("/api/articles")
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert "articles" in data
+    assert len(data["articles"]) >= 1
+    assert data["articles"][0]["id"] == "1"
+
+
+def test_post_nested_reply_endpoint(client, monkeypatch):
+    monkeypatch.setattr(main_module, "configcat_flag", lambda key, default=False: True)
+    resp_parent = client.post("/api/articles/1/comments", json={"author": "Padre", "content": "Comentario padre"})
+    parent_id = resp_parent.get_json()["comment"]["id"]
+
+    resp_reply = client.post("/api/articles/1/comments", json={
+        "author": "Hijo",
+        "content": "Respuesta anidada",
+        "parent_id": parent_id
+    })
+    assert resp_reply.status_code == 201
+    assert resp_reply.get_json()["comment"]["parent_id"] == parent_id
+
 
