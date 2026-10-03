@@ -36,7 +36,7 @@ jobs:
 
       - name: Run tests
         working-directory: ./src
-        run: pytest tests.py
+        run: pytest
 
   build_and_push:
     needs: test

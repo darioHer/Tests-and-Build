@@ -98,3 +98,38 @@ def test_historial_vacio_no_registra_bloqueadas(client, monkeypatch):
 
     resp = client.get("/api/historial")
     assert resp.get_json()["historial"] == []
+
+
+def test_potencia_con_flag_encendido(client, monkeypatch):
+    monkeypatch.setattr(main_module, "configcat_flag", lambda key, default=False: True)
+    resp = client.get("/api/potencia?a=2&b=3")
+    assert resp.status_code == 200
+    assert resp.get_json() == {"result": 8}
+
+
+def test_potencia_con_flag_apagado(client, monkeypatch):
+    monkeypatch.setattr(main_module, "configcat_flag", lambda key, default=False: False)
+    resp = client.get("/api/potencia?a=2&b=3")
+    assert resp.status_code == 404
+    assert resp.get_json()["error"] == "feature_disabled"
+
+
+def test_raiz_con_flag_encendido(client, monkeypatch):
+    monkeypatch.setattr(main_module, "configcat_flag", lambda key, default=False: True)
+    resp = client.get("/api/raiz?a=9")
+    assert resp.status_code == 200
+    assert resp.get_json() == {"result": 3}
+
+
+def test_raiz_con_flag_apagado(client, monkeypatch):
+    monkeypatch.setattr(main_module, "configcat_flag", lambda key, default=False: False)
+    resp = client.get("/api/raiz?a=9")
+    assert resp.status_code == 404
+    assert resp.get_json()["error"] == "feature_disabled"
+
+
+def test_raiz_numero_negativo(client, monkeypatch):
+    monkeypatch.setattr(main_module, "configcat_flag", lambda key, default=False: True)
+    resp = client.get("/api/raiz?a=-9")
+    assert resp.status_code == 400
+    assert resp.get_json()["error"] == "numero_negativo"
