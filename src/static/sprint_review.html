@@ -823,6 +823,15 @@
       if (target) target.classList.add('active');
     }
 
+    // Soporte para abrir pestaña directa por URL query (?tab=tab-liberacion)
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const initialTab = urlParams.get('tab') || window.location.hash.replace('#', '');
+      if (initialTab && document.getElementById(initialTab)) {
+        showTab(initialTab);
+      }
+    });
+
     // Rollout & Toggle state
     let currentRollout = 0;
     let isKillSwitch = false;

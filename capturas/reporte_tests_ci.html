@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>CI/CD Terminal Execution — Pytest & Ruff</title>
+  <style>
+    body {
+      background: #090d16;
+      color: #f8fafc;
+      font-family: 'Consolas', 'Courier New', monospace;
+      padding: 2rem;
+      margin: 0;
+    }
+    .terminal-window {
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 0.75rem;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      max-width: 950px;
+      margin: 0 auto;
+    }
+    .terminal-header {
+      background: #1e293b;
+      padding: 0.6rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+    .terminal-body {
+      padding: 1.5rem;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+    .cmd { color: #38bdf8; font-weight: bold; }
+    .green { color: #34d399; font-weight: bold; }
+    .cyan { color: #38bdf8; }
+    .dim { color: #64748b; }
+  </style>
+</head>
+<body>
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <span class="dot dot-red"></span>
+      <span class="dot dot-yellow"></span>
+      <span class="dot dot-green"></span>
+      <span style="margin-left: 0.5rem; font-size: 0.8rem; color: #94a3b8;">bash — Tests & Linter Pipeline (Trunk-Based Development)</span>
+    </div>
+    <div class="terminal-body">
+      <div><span class="cyan">dario@dev-station</span>:<span class="dim">~/Tests-and-Build</span>$ <span class="cmd">.venv/Scripts/python -m ruff check .</span></div>
+      <div class="green">All checks passed!</div>
+      <br>
+      <div><span class="cyan">dario@dev-station</span>:<span class="dim">~/Tests-and-Build</span>$ <span class="cmd">.venv/Scripts/python -m pytest src/tests.py src/test_app.py -v</span></div>
+      <div class="dim">============================= test session starts ==============================</div>
+      <div>platform win32 -- Python 3.11.7, pytest-8.3.4, pluggy-1.6.0</div>
+      <div>rootdir: C:\Users\dario\OneDrive\Documentos\Programacion\python\src</div>
+      <div>configfile: pytest.ini</div>
+      <div class="dim">collected 79 items</div>
+      <br>
+      <div>src/tests.py::test_sums_2_numbers <span class="green">PASSED</span> <span class="dim">[  1%]</span></div>
+      <div>src/tests.py::test_resta_2_numbers_con_flag_encendido <span class="green">PASSED</span> <span class="dim">[  3%]</span></div>
+      <div>src/tests.py::test_resta_con_flag_apagado_lanza_error <span class="green">PASSED</span> <span class="dim">[  5%]</span></div>
+      <div>src/tests.py::test_taller6_pagos_express_con_flag_encendido <span class="green">PASSED</span> <span class="dim">[ 50%]</span></div>
+      <div>src/tests.py::test_taller6_pagos_express_circuit_breaker_kill_switch <span class="green">PASSED</span> <span class="dim">[ 53%]</span></div>
+      <div>src/tests.py::test_taller6_pagos_express_telemetria_y_observabilidad <span class="green">PASSED</span> <span class="dim">[ 54%]</span></div>
+      <div>src/test_app.py::test_taller6_pago_express_con_flag_encendido <span class="green">PASSED</span> <span class="dim">[ 94%]</span></div>
+      <div>src/test_app.py::test_taller6_pago_express_canary_rollout_via_param <span class="green">PASSED</span> <span class="dim">[ 96%]</span></div>
+      <div>src/test_app.py::test_taller6_status_telemetria_y_toggles_obsoletos <span class="green">PASSED</span> <span class="dim">[ 98%]</span></div>
+      <div>src/test_app.py::test_taller6_post_toggle_control_y_circuit_breaker <span class="green">PASSED</span> <span class="dim">[100%]</span></div>
+      <br>
+      <div class="green">============================= 79 passed in 0.23s ==============================</div>
+      <br>
+      <div><span class="cyan">dario@dev-station</span>:<span class="dim">~/Tests-and-Build</span>$ <span class="dim"># CI Verde listo para despliegue continuo a Render ✔</span></div>
+    </div>
+  </div>
+</body>
+</html>
