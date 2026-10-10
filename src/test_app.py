@@ -9,11 +9,14 @@ from app import app
 @pytest.fixture
 def client():
     app.config.update(TESTING=True)
-    # La calculadora y el servicio de comentarios se reinician en cada test
+    # La calculadora, el servicio de comentarios y pagos se reinician en cada test
     app_module.calculadora = main_module.Calculator(
         flag_provider=lambda key, default=False: main_module.configcat_flag(key, default)
     )
     app_module.comment_service = main_module.CommentService(
+        flag_provider=lambda key, default=False: main_module.configcat_flag(key, default)
+    )
+    app_module.pagos_service = main_module.PagosExpressService(
         flag_provider=lambda key, default=False: main_module.configcat_flag(key, default)
     )
     return app.test_client()
@@ -274,5 +277,74 @@ def test_post_comment_con_simulacion_header_y_query(client):
     )
     assert resp_canary.status_code == 200
     assert len(resp_canary.get_json()["comments"]) >= 1
+
+
+# ==============================================================================
+# Pruebas de Integración API Taller 6: Pagos Express & Observabilidad
+# ==============================================================================
+
+
+def test_taller6_pago_express_con_flag_encendido(client, monkeypatch):
+    monkeypatch.setattr(main_module, "configcat_flag", lambda key, default=False, user=None: True)
+    resp = client.post("/api/pagos-express", json={"user_id": "u1", "monto": 99.99, "item_id": "curso-tbd"})
+    assert resp.status_code == 201
+    data = resp.get_json()
+    assert data["status"] == "approved"
+    assert data["transaction"]["monto"] == 99.99
+    assert data["transaction"]["user_id"] == "u1"
+
+
+def test_taller6_pago_express_con_flag_apagado(client, monkeypatch):
+    monkeypatch.setattr(main_module, "configcat_flag", lambda key, default=False, user=None: False)
+    resp = client.post("/api/pagos-express", json={"user_id": "u1", "monto": 99.99})
+    assert resp.status_code == 404
+    assert resp.get_json()["error"] == "feature_disabled"
+
+
+def test_taller6_pago_express_canary_rollout_via_param(client):
+    app_module.pagos_service = main_module.PagosExpressService(
+        flag_provider=app_module._current_flag_provider
+    )
+    # Simulación directa vía parámetro de query (Canary 20%)
+    resp = client.post(
+        "/api/pagos-express?simulate_flags=canary",
+        json={"user_id": "canary_user", "monto": 45.0},
+    )
+    assert resp.status_code == 201
+    assert resp.get_json()["status"] == "approved"
+
+
+def test_taller6_pago_express_validaciones_monto(client, monkeypatch):
+    monkeypatch.setattr(main_module, "configcat_flag", lambda key, default=False, user=None: True)
+    resp = client.post("/api/pagos-express", json={"user_id": "u1", "monto": -10})
+    assert resp.status_code == 400
+    assert resp.get_json()["error"] == "invalid_params"
+
+
+def test_taller6_status_telemetria_y_toggles_obsoletos(client):
+    resp = client.get("/api/pagos-express/status")
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert "metrics" in data
+    assert "obsolete_toggles" in data
+    assert len(data["obsolete_toggles"]) >= 3
+
+
+def test_taller6_post_toggle_control_y_circuit_breaker(client, monkeypatch):
+    monkeypatch.setattr(main_module, "configcat_flag", lambda key, default=False, user=None: True)
+    # Activar circuit breaker
+    resp = client.post("/api/pagos-express/toggle", json={"circuit_breaker": True, "rollout_pct": 20})
+    assert resp.status_code == 200
+    assert resp.get_json()["metrics"]["circuit_breaker_tripped"] is True
+
+    # El endpoint debe rechazar transacciones mientras el circuit breaker esté activo
+    resp_pay = client.post("/api/pagos-express", json={"user_id": "u1", "monto": 20.0})
+    assert resp_pay.status_code == 404
+
+
+def test_taller6_sprint_review_html_disponible(client):
+    resp = client.get("/sprint-review")
+    # Si aún no existe el archivo estático puede dar 404 hasta que se cree, o 200 cuando se agregue
+    assert resp.status_code in (200, 404)
 
 

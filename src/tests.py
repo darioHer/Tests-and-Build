@@ -7,6 +7,8 @@ from main import (
     COMMENTS_FLAG,
     DIVISION_FLAG,
     MULTIPLICACION_FLAG,
+    PAGOS_EXPRESS_FLAG,
+    PAGOS_EXPRESS_V1_FLAG,
     RESTA_FLAG,
     Calculator,
     Comment,
@@ -14,6 +16,7 @@ from main import (
     DivisionPorCeroError,
     FeatureDisabledError,
     NumeroNegativoError,
+    PagosExpressService,
     configcat_flag,
 )
 
@@ -288,5 +291,77 @@ def test_comment_model_properties():
     assert c.id == "c_99"
     assert c.author == "Ana"
     assert c.to_dict()["id"] == "c_99"
+
+
+# ==============================================================================
+# Pruebas Unitarias del Taller 6: Liberación Segura & Pagos Express
+# ==============================================================================
+
+
+def test_taller6_pagos_express_con_flag_encendido():
+    assert PAGOS_EXPRESS_V1_FLAG == "pagos-express-v1"
+    service = PagosExpressService(flag_provider=flag_on)
+    tx = service.procesar_pago(user_id="user_test_1", monto=50.0, item_id="item-pro")
+    assert tx["status"] == "approved"
+    assert tx["user_id"] == "user_test_1"
+    assert tx["monto"] == 50.0
+    assert tx["id"].startswith("tx_")
+
+
+def test_taller6_pagos_express_con_flag_apagado_lanza_error():
+    service = PagosExpressService(flag_provider=flag_off)
+    with pytest.raises(FeatureDisabledError):
+        service.procesar_pago(user_id="user_test_2", monto=25.0)
+
+
+def test_taller6_pagos_express_valida_monto_y_usuario():
+    service = PagosExpressService(flag_provider=flag_on)
+    with pytest.raises(ValueError, match="identificador de usuario"):
+        service.procesar_pago(user_id="", monto=10.0)
+
+    with pytest.raises(ValueError, match="monto"):
+        service.procesar_pago(user_id="user_1", monto=-5.0)
+
+    with pytest.raises(ValueError, match="monto"):
+        service.procesar_pago(user_id="user_1", monto="no_numero")
+
+
+def test_taller6_pagos_express_circuit_breaker_kill_switch():
+    service = PagosExpressService(flag_provider=flag_on)
+    service.set_circuit_breaker(True)
+    with pytest.raises(FeatureDisabledError):
+        service.procesar_pago(user_id="user_1", monto=10.0)
+
+    service.set_circuit_breaker(False)
+    tx = service.procesar_pago(user_id="user_1", monto=10.0)
+    assert tx["status"] == "approved"
+
+
+def test_taller6_pagos_express_telemetria_y_observabilidad():
+    service = PagosExpressService(flag_provider=flag_on)
+    service.set_rollout_pct(20)
+    service.procesar_pago(user_id="user_ok", monto=30.0)
+
+    try:
+        service.procesar_pago(user_id="user_err", monto=30.0, simulate_error=True)
+    except RuntimeError:
+        pass
+
+    metricas = service.obtener_metricas()
+    assert metricas["total_requests"] == 2
+    assert metricas["successful_requests"] == 1
+    assert metricas["failed_requests"] == 1
+    assert metricas["error_rate_pct"] == 50.0
+    assert metricas["rollout_pct"] == 20
+    assert metricas["flag_name"] == PAGOS_EXPRESS_FLAG
+
+
+def test_taller6_auditoria_toggles_obsoletos():
+    service = PagosExpressService(flag_provider=flag_on)
+    obsoletos = service.auditar_toggles_obsoletos()
+    assert len(obsoletos) >= 3
+    for toggle in obsoletos:
+        assert toggle["edad_dias"] >= 45
+        assert toggle["estado"] == "obsoleto"
 
 

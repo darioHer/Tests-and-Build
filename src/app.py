@@ -18,11 +18,13 @@ from flask import Flask, jsonify, request, send_from_directory
 
 import main
 from main import (
+    PAGOS_EXPRESS_FLAG,
     Calculator,
     CommentService,
     DivisionPorCeroError,
     FeatureDisabledError,
     NumeroNegativoError,
+    PagosExpressService,
 )
 
 
@@ -39,8 +41,16 @@ def _current_flag_provider(key, default=False):
 
     if sim in ("all", "on", "true", "100"):
         return True
-    if sim == "10":
+    if sim in ("10", "canary_10"):
         return key in ("resta_enabled", "multiplicacion_enabled", "comments_enabled")
+    if sim in ("20", "canary", "canary_20"):
+        return key in (
+            "resta_enabled",
+            "multiplicacion_enabled",
+            "comments_enabled",
+            "pagos_express_enabled",
+            "pagos-express-v1",
+        )
     if sim in ("off", "0", "false"):
         return False
 
@@ -63,9 +73,10 @@ def _current_flag_provider(key, default=False):
         return main.configcat_flag(key, default)
 
 
-# Instancias compartidas para toda la app (calculadora y comentarios)
+# Instancias compartidas para toda la app (calculadora, comentarios y pagos express)
 calculadora = Calculator(flag_provider=_current_flag_provider)
 comment_service = CommentService(flag_provider=_current_flag_provider)
+pagos_service = PagosExpressService(flag_provider=_current_flag_provider)
 
 app = Flask(__name__, static_folder="static", static_url_path="")
 
@@ -223,6 +234,67 @@ def get_comments_endpoint(article_id):
         return jsonify(comments=comments), 200
     except FeatureDisabledError:
         return jsonify(error="feature_disabled", message="Comentarios desactivados."), 404
+
+
+# ==============================================================================
+# Rutas de Pagos Express & Liberación Segura (Taller 6)
+# ==============================================================================
+
+
+@app.get("/sprint-review")
+def sprint_review():
+    """Página interactiva de simulación de Sprint Review y Liberación Segura."""
+    return send_from_directory(app.static_folder, "sprint_review.html")
+
+
+@app.post("/api/pagos-express")
+def post_pago_express():
+    """Taller 6: Endpoint de pago con 1 solo clic detrás del toggle pagos_express_enabled."""
+    data = request.get_json(silent=True) or request.form.to_dict() or {}
+    user_id = data.get("user_id") or request.headers.get("X-User-ID") or "user_demo"
+    monto = data.get("monto", 49.99)
+    item_id = data.get("item_id", "prod-express-01")
+    simulate_error = bool(data.get("simulate_error", False))
+
+    try:
+        tx = pagos_service.procesar_pago(
+            user_id=user_id,
+            monto=monto,
+            item_id=item_id,
+            simulate_error=simulate_error,
+        )
+        return jsonify(status="approved", transaction=tx), 201
+    except FeatureDisabledError:
+        return (
+            jsonify(
+                error="feature_disabled",
+                message=f"La función de Pagos Express está inactiva (flag '{PAGOS_EXPRESS_FLAG}').",
+            ),
+            404,
+        )
+    except ValueError as exc:
+        return jsonify(error="invalid_params", message=str(exc)), 400
+    except RuntimeError as exc:
+        return jsonify(error="gateway_error", message=str(exc)), 502
+
+
+@app.get("/api/pagos-express/status")
+def get_pagos_status():
+    """Taller 6: Telemetría de liberación segura, observabilidad y auditoría de toggles."""
+    metricas = pagos_service.obtener_metricas()
+    toggles_obsoletos = pagos_service.auditar_toggles_obsoletos()
+    return jsonify(metrics=metricas, obsolete_toggles=toggles_obsoletos), 200
+
+
+@app.post("/api/pagos-express/toggle")
+def post_pagos_toggle():
+    """Control administrativo del toggle para pruebas y simulación en vivo."""
+    data = request.get_json(silent=True) or {}
+    if "circuit_breaker" in data:
+        pagos_service.set_circuit_breaker(bool(data["circuit_breaker"]))
+    if "rollout_pct" in data:
+        pagos_service.set_rollout_pct(int(data["rollout_pct"]))
+    return jsonify(status="updated", metrics=pagos_service.obtener_metricas()), 200
 
 
 if __name__ == "__main__":
