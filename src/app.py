@@ -16,6 +16,22 @@ GET /api/historial                      operaciones realizadas en este proceso
 import os
 from flask import Flask, jsonify, request, send_from_directory
 
+# Cargar automáticamente .env local si existe (sin romper si no hay python-dotenv instalado)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # Si python-dotenv no está, leer directamente si existe el archivo .env
+    env_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+    if os.path.exists(env_file):
+        with open(env_file, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    os.environ.setdefault(k.strip(), v.strip())
+
+
 import main
 from main import (
     PAGOS_EXPRESS_FLAG,
