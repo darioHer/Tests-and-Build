@@ -1,5 +1,7 @@
-# 📘 Scrum + Trunk-Based Development (TBD) Playbook
-### *Guía Práctica para Equipos de Alta Frecuencia de Despliegue y Entrega Continua*
+# 📘 Scrum + Trunk-Based Development (TBD) Playbook (Versión 3.0)
+### *Guía Oficial de Adaptación a Continuous Deployment, Ceremonias y Liberación Segura*
+> **Aprobado por el Equipo de Ingeniería & Producto**  
+> *Prerrequisito completado: Talleres 1 al 6 completados + Pipeline CI/CD en Render + ConfigCat + DoD 100% activo.*
 
 ---
 
@@ -15,7 +17,7 @@ El flujo de desarrollo e integración del equipo sigue una arquitectura de entre
 [ GitHub Packages / GHCR ] ◄── [ Merge a main ] ◄── [ CI: Ruff + Pytest ] ◄── [ Code Review ]
             │
             ▼
-[ Despliegue Continuo ] ──► [ Feature Flags (ConfigCat) ] ──► [ Usuarios en Producción ]
+[ Despliegue Continuo (Render) ] ──► [ Feature Flags (ConfigCat) ] ──► [ Usuarios en Producción ]
 ```
 
 ### 1.2 Análisis de Fricciones y Salud del Flujo (Semáforo de Diagnóstico)
@@ -25,10 +27,11 @@ El flujo de desarrollo e integración del equipo sigue una arquitectura de entre
 | **Commit & Rama Local** | 🟢 | Ramas de vida corta (< 1 día), cambios atómicos y enfocados. | Ninguna. Alta agilidad local. |
 | **Pull Request (PR)** | 🟢 | PRs pequeños de 50–150 líneas orientados a micro-incrementos. | Revisión ágil sin sobrecarga cognitiva. |
 | **CI Automatizado (Lint & Tests)** | 🟢 | Ruff + Pytest ejecutados en < 20s en GitHub Actions. | Ejecución rápida que evita cuellos de botella. |
-| **Code Review** | 🟡 | Dependencia de disponibilidad de revisores para merges rápidos. | Fricción moderada si el revisor tarda más de 2 horas. |
+| **Code Review** | 🟢 | Regla de revisión en < 2 horas. PRs pequeños se revisan de inmediato. | Fluidez continua sin bloqueos prolongados. |
 | **Merge a Main** | 🟢 | Trunk-based estricto con branch protection y reglas automáticas. | Flujo limpio y sin ramas de larga duración desfasadas. |
-| **Construcción Docker & GHCR** | 🟢 | Build y Push automatizado a GitHub Container Registry en cada push a `main`. | Contenedores inmutables listos para desplegar. |
-| **Despliegue & Activación** | 🟡 | Despliegue continuo con control por Feature Toggles de ConfigCat. | Necesidad de mantener disciplina en la limpieza de flags antiguos. |
+| **Construcción Docker & GHCR** | 🟢 | Build y Push automatizado a GHCR solo en push a `main`. | Contenedores inmutables listos para desplegar. |
+| **Despliegue Continuo (Render)** | 🟢 | Auto-deploy disparado por webhook al mergear en `main`. | Comprobación de salud en `/health` antes de recibir tráfico. |
+| **Liberación por Toggles** | 🟢 | Control de activación desacoplado mediante ConfigCat. | Monitoreo en tiempo real y política de retiro de flags. |
 
 ### 1.3 Respuestas al Diagnóstico del Equipo
 * **¿Cuánto tiempo vive normalmente una rama?**
@@ -57,27 +60,26 @@ La adopción de TBD y CD transforma las responsabilidades tradicionales de Scrum
 ┌────────────────┴───────────────────┐   ┌───────────────┴────────────────────┐
 │         DEVELOPERS / TEAM          │   │           SCRUM MASTER             │
 │  • Responsabilidad colectiva       │   │  • Facilita integración diaria     │
-│  • Main siempre verde y releasable │   │  • Elimina fricción del pipeline   │
-│  • TDD, ramas cortas y toggles     │   │  • Protege tiempo técnico / deuda  │
+│  • Main siempre verde y releasable │   │  • Elimina miedo a romper main     │
+│  • TDD, ramas cortas y toggles     │   │  • Protege tiempo del pipeline     │
 └────────────────────────────────────┘   └────────────────────────────────────┘
 ```
 
 ### 2.1 Responsabilidades por Rol
 
 #### 👑 Product Owner (PO)
-* **Priorización orientada al flujo:** Prioriza historias no solo por valor de negocio, sino considerando el riesgo técnico y el tamaño del lote (*batch size*).
-* **Gestión de Feature Toggles:** Decide los porcentajes de rollout gradual (ej. 10% → 50% → 100%) y la activación/desactivación de features en ConfigCat sin necesidad de nuevos despliegues de código.
-* **Sliceado Vertical Activo:** Participa activamente en el refinamiento para descomponer historias grandes en incrementos pequeños que entreguen valor comprobable.
+* **Priorización orientada al flujo:** Prioriza historias considerando el riesgo técnico, impacto de negocio y tamaño del batch.
+* **Control de Lanzamiento (Release):** Decide los porcentajes de rollout gradual (0% $\rightarrow$ 20% $\rightarrow$ 100%) y la activación de features en ConfigCat sin depender de despliegues de infraestructura.
+* **Sliceado Vertical Activo:** Participa activamente en el refinamiento para descomponer historias grandes en incrementos pequeños que entreguen valor comprobable en producción.
 
 #### 💻 Developers (Equipo de Desarrollo)
 * **Responsabilidad colectiva:** `main` es sagrado. Si el pipeline de CI se rompe, la máxima prioridad del equipo es arreglarlo (*Stop the Line / Andon Cord*).
 * **Micro-incrementos y Ramas Efímeras:** Desarrollan en ramas de corta vida (< 1 día), usando toggles para código incompleto o experimental.
-* **Ownership del Pipeline:** Mantenimiento de tests unitarios/integración rápidos y configuraciones de linters para garantizar feedback en segundos.
+* **Ownership del Pipeline:** Mantenimiento de tests rápidos, cobertura y telemetría de errores antes de encender cualquier flag.
 
 #### 🛡️ Scrum Master (SM)
-* **Guardián de la cadencia de integración:** Monitorea que no existan ramas abiertas por más de 1 día y facilita el desbloqueo inmediato de revisiones de código.
-* **Cultura sin culpa (*Blameless*):** Fomenta la experimentación y elimina el miedo a romper `main` promoviendo la reversión rápida (*revert-first*) y el desacoplamiento mediante toggles.
-* **Protección de la deuda técnica del pipeline:** Asegura capacidad en el sprint para optimizar tiempos de build, pruebas y automatizaciones de entrega.
+* **Guardián de la cadencia de integración:** Facilita la disciplina de integración diaria. Elimina el miedo a romper `main` mediante la cultura blameless y reversión rápida.
+* **Protección del tiempo técnico:** Asegura capacidad en el sprint para optimizar pipelines, eliminar tests flaky y limpiar toggles obsoletos.
 
 ### 2.2 Compromisos de Acción Individual (*Post-its del Equipo*)
 * 🎯 **Product Owner:** *"A partir de mañana, definiré los criterios de aceptación pensando en validaciones directas en producción con toggles apagados al inicio."*
@@ -86,96 +88,142 @@ La adopción de TBD y CD transforma las responsabilidades tradicionales de Scrum
 
 ---
 
-## 🔄 3. Artefactos y Ceremonias Adaptados
+## 🔄 3. Artefactos y Ceremonias Adaptados a CD + TBD
 
-| Artefacto / Ceremonia | Versión Clásica de Scrum | Adaptación a TBD + Continuous Deployment |
+| Artefacto / Ceremonia | Versión Clásica de Scrum | Adaptación a TBD + Continuous Deployment (v3.0) |
 | :--- | :--- | :--- |
-| **Product Backlog** | Lista de historias grandes agrupadas por épicas. | Historias re-sliceadas verticalmente en micro-incrementos con plan de Feature Flag y AC validables en producción. |
-| **Sprint Backlog** | Paquete cerrado de tareas comprometidas para entregar al final de 2 semanas. | Flujo continuo de incrementos priorizados por valor, riesgo y orden de integración diaria a `main`. |
-| **Incremento** | Paquete entregable al final del Sprint tras la Review. | Cada commit/PR mergeado en `main` que supera el pipeline de CI es un incremento potencialmente desplegable. |
-| **Daily Scrum** | ¿Qué hice ayer? ¿Qué haré hoy? ¿Qué impedimentos tengo? | **¿Qué voy a integrar hoy a main y qué necesito para que sea seguro y pase el pipeline?** |
-| **Sprint Review** | Demostración en ambiente local/staging de lo construido en 2 semanas. | Demostración de lo que ya está en producción (o tras toggle) con telemetría, métricas reales y feedback de usuarios. |
-| **Sprint Retrospective** | Discusión general sobre procesos y relaciones de equipo. | Foco riguroso en métricas DORA, flujo de valor, cuellos de botella en Code Review/CI y salud de los Feature Flags. |
+| **Product Backlog** | Lista de historias grandes agrupadas por épicas. | Historias sliceadas verticalmente + plan de Feature Toggle + AC validables en producción. |
+| **Sprint Backlog** | Trabajo del sprint en bloque cerrado de 2 semanas. | Trabajo que se planea integrar a main diariamente priorizado por valor y riesgo. |
+| **Incremento** | Paquete entregable al final del sprint. | Cualquier commit en main que pase CI y se despliegue es un incremento potencial. |
+| **Daily Scrum** | ¿Qué hice ayer? ¿Qué haré hoy? ¿Qué impedimentos? | **¿Qué voy a integrar hoy a main y qué necesito para que sea seguro?** |
+| **Sprint Review** | Demo del incremento del sprint en ambiente local/staging. | **Demo de lo que ya está (o puede estar) en producción + feedback real con telemetría.** |
+| **Sprint Retrospective** | Discusión general sobre procesos. | **Mejorar flujo de valor + salud del pipeline + disciplina de TBD.** |
 
 ---
 
-## 📜 4. Principios y Reglas de Oro de TBD
+## 🎬 4. Formato Oficial del Nuevo Sprint Review (Punto 1 del Taller 6)
 
-### 4.1 Los 5 Principios Fundamentales del Equipo
-1. **Trunk es la única fuente de la verdad:** Todo el trabajo converge diariamente en la rama `main`.
-2. **Desacoplar Despliegue de Lanzamiento:** Desplegar código a producción (*Deploy*) no significa activarlo para el usuario final (*Release*). Los Feature Flags permiten desplegar continuamente código en progreso sin impacto negativo.
-3. **Calidad integrada en el origen (*Shift-Left Testing*):** Pruebas unitarias y linters se ejecutan localmente y en CI antes de cualquier merge.
-4. **Cultura de Reversión Rápida (*Revert-First*):** Ante una falla en `main`, se revierte de inmediato el commit problemático para restaurar la salud del tronco, investigando la causa posteriormente.
-5. **Revisión de Código Continua y Exprés:** Las revisiones de PRs pequeños tienen prioridad máxima en el día a día del equipo.
+### 4.1 Principios del Review en CD + TBD
+1. **Demostración en Producción Real:** La demo se realiza sobre el ambiente desplegado en **Render**, no en localhost.
+2. **Valor Incremental con Toggles:** Se muestra la funcionalidad con el Feature Toggle encendido y se demuestra el comportamiento seguro (*Fail-Closed*) cuando está apagado.
+3. **Telemetría y Datos Reales:** Se acompaña la demo funcional con métricas de salud (latencia, tasa de errores y tasa de conversión).
+4. **Enfoque en Valor Percibido:** La conversación con los stakeholders se centra en: *"¿Qué valor recibieron realmente los usuarios con este incremento?"* en vez de *"¿Cuántas líneas de código escribimos?"*.
 
-### 4.2 Las 5 Reglas de Oro de Integración a Main
+### 4.2 Estructura Obligatoria de Cada Demostración (4–5 min por ítem)
+Para cada incremento presentado, el presentador debe seguir estrictamente este guion:
+1. **¿Qué problema de usuario resuelve?** (Contexto y dolor de negocio mitigado).
+2. **¿Está activo para todos o detrás de toggle?** (Estado del rollout: 0%, 20% canary, o 100% GA).
+3. **Demo en vivo en Render:** Demostración práctica de la funcionalidad (con toggle ON/OFF para validar aislamiento).
+4. **Métrica o evidencia de valor:** Datos de telemetría (ej. latencia promedio, tasa de éxito, errores 5xx).
+5. **Pregunta al stakeholder / PO:** *"¿Esto genera el valor esperado?"* para capturar feedback inmediato.
+
+### 4.3 Roles durante la Simulación del Review
+* **Developer:** Realiza la demostración técnica en vivo sobre el servicio desplegado.
+* **Product Owner:** Facilita las preguntas de negocio y valida la retroalimentación de los interesados.
+* **Scrum Master y Observadores:** Anotan oportunidades de mejora en el formato y tiempos de la sesión.
+
+---
+
+## 🔄 5. Formato Oficial de la Nueva Sprint Retrospective (Punto 2 del Taller 6)
+
+### 5.1 Los 3 Nuevos Focos Obligatorios de Inspección
+La Retrospectiva audita formalmente tres dimensiones cuantitativas y cualitativas del flujo:
+
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│               ✨ LAS 5 REGLAS DE ORO DE INTEGRACIÓN A MAIN             │
+│               🔍 LOS 3 NUEVOS FOCOS DE LA RETROSPECTIVA TBD            │
 ├────────────────────────────────────────────────────────────────────────┤
-│ 1. Tamaño del lote ≤ 1 día: Ninguna rama vive más de 24 horas.         │
-│ 2. Main siempre verde: Si el CI falla, arreglar main es prioridad #1. │
-│ 3. Feature Flags obligatorios para features incompletas o riesgosas.  │
-│ 4. Cobertura de pruebas automatizadas al 100% en nuevos endpoints/código│
-│ 5. Code Review en < 2 horas: PRs pequeños se revisan de inmediato.    │
+│ 1. SALUD DEL PIPELINE:                                                 │
+│    • ¿Cuántas veces se rompió el CI?                                  │
+│    • ¿Cuánto tardó el deploy promedio a Render?                        │
+│    • ¿Hubo rollbacks o caídas de health check?                         │
+│                                                                        │
+│ 2. DISCIPLINA TBD:                                                     │
+│    • ¿Cuántas integraciones diarias a main logramos?                   │
+│    • ¿Alguna rama vivió más de 1 día?                                  │
+│    • ¿Usamos Feature Toggles correctamente sin acumular deuda?         │
+│                                                                        │
+│ 3. FLUJO DE VALOR:                                                     │
+│    • Lead Time (desde el primer commit hasta código en producción).   │
+│    • ¿El valor llegó realmente a los usuarios finales?                 │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
----
+### 5.2 Dinámica de Retrospectiva (Estructura de 4 Columnas en Miro)
+El equipo debate y organiza los hallazgos en cuatro cuadrantes:
+1. 🟢 **Lo que funcionó bien en el flujo:** Éxitos de automatización, tests rápidos, builds verdes.
+2. 🟡 **Lo que generó fricción:** Retrasos en Code Reviews, tests intermitentes (*flaky*), acumulación de toggles.
+3. 🔴 **Lo que rompió el flujo o generó miedo:** Fallos en health check, falta de observabilidad, presiones comerciales prematuras.
+4. 🎯 **Acciones de mejora:** **Regla de oro: Máximo 3 acciones concretas, asignables y medibles.**
 
-## ✅ 5. Definition of Ready (DoR) y Definition of Done (DoD)
-
-### 5.1 Definition of Ready (DoR) Orientada a TBD
-Una historia o incremento está **Ready** para entrar al Sprint si cumple con:
-* [x] **Sliceado Vertical:** Está dividida en un incremento integrable a `main` en $\le 1$ día de trabajo.
-* [x] **Criterios de Aceptación Verificables:** Los AC son claros y pueden validarse en producción/staging.
-* [x] **Estrategia de Feature Flag:** Se definió si requiere Feature Flag, indicando el nombre de la clave en ConfigCat (ej. `raiz_enabled`) y su valor inicial (`False`).
-* [x] **Sin dependencias bloqueantes externas:** No requiere la finalización previa de servicios de terceros no disponibles.
-* [x] **Estrategia de pruebas clara:** El equipo comprende qué pruebas unitarias y de integración validarán el incremento.
-
-### 5.2 Definition of Done (DoD) Preliminar (Técnico + Negocio)
-Un incremento se considera **Done** cuando:
-* [x] **Código y Linting:** Código implementado, formateado y sin advertencias con `ruff check .`.
-* [x] **Suite de Pruebas:** Pruebas unitarias e integración ejecutadas y aprobadas al 100% con `pytest`.
-* [x] **Revisión de Código:** PR revisado y aprobado por al menos un compañero de equipo.
-* [x] **Integración a Main:** Código mergeado satisfactoriamente en `main`.
-* [x] **CI/CD Exitoso:** Workflow de GitHub Actions ejecutado con éxito, generando la imagen Docker en GHCR (`ghcr.io/darioher/tests-and-build:latest`).
-* [x] **Configuración de Feature Flag:** Flag registrado y verificado en ConfigCat (apagado o con el porcentaje de rollout acordado).
-* [x] **Validación de Negocio:** Comportamiento validado en ambiente desplegado de acuerdo a los criterios de aceptación.
+### 5.3 Preguntas Guía del Facilitador
+* ¿Qué nos impidió integrar más veces al día a `main`?
+* ¿El auto-deploy nos dio más confianza o más miedo?
+* ¿Los Feature Toggles nos ayudaron a mitigar riesgos o se están volviendo deuda técnica acumulada?
+* ¿El Definition of Done (DoD) se respetó realmente en cada commit?
 
 ---
 
-## 🚩 6. Estrategia de Feature Flags con ConfigCat
+## 🛡️ 6. Política Oficial de Liberación Segura de Valor (Punto 3 del Taller 6)
 
-### 6.1 Nomenclatura y Convenciones
-* Nombres descriptivos en minúsculas con sufijo `_enabled`:
-  * `resta_enabled`: Habilita operaciones de resta, multiplicación y división.
-  * `potencia_enabled`: Habilita la operación de cálculo exponencial.
-  * `raiz_enabled`: Habilita la operación de raíz cuadrada.
+### 6.1 Principio de Desacoplamiento (Deploy $\neq$ Release)
+El código se despliega a producción en el instante en que pasa los tests y se mergea a `main`. Sin embargo, la exposición a los usuarios finales es un evento de negocio gobernado por ConfigCat.
 
-### 6.2 Ciclo de Vida del Feature Toggle
-```
-[ 1. Creación ] ──► [ 2. Desarrollo Backend ] ──► [ 3. Exposición UI (Rollout 10%) ]
-(Flag en False)       (Integrado a main)             (Monitoreo de errores)
-                                                              │
-                                                              ▼
-[ 5. Limpieza de Deuda ] ◄── [ 4. Rollout Total ] ◄───────────┘
-(Eliminar flag del código)    (100% de usuarios)
-```
+### 6.2 Estrategia de Rollout Progresivo (Canary Release)
+Toda funcionalidad de impacto crítico sigue un proceso de liberación en 4 etapas:
+1. **Fase 0 — Inactivo (0% OFF):** Código en producción, validado por tests automatizados pero invisible para usuarios generales.
+2. **Fase 1 — Rollout Interno / Canary (5% – 20%):** Activación para empleados internos y cohorte beta. Se recopila telemetría de pasarela, latencia y errores.
+3. **Fase 2 — Monitoreo Activo (24–48 horas):** Observación estricta de las métricas clave antes de proceder a la apertura general.
+4. **Fase 3 — General Availability (100% GA):** Apertura total una vez verificada la estabilidad.
 
-1. **Creación:** Flag registrado en ConfigCat con valor inicial `False`.
-2. **Desarrollo Backend:** Código integrado a `main` protegido por `if not self._flag(...)`.
-3. **Exposición Frontend & Rollout Gradual:** Activación progresiva (10% $\rightarrow$ 50% $\rightarrow$ 100%) validando estabilidad y telemetría.
-4. **General Availability (GA):** Flag al 100% encendido para todos los usuarios.
-5. **Retiro y Limpieza Técnica:** Al sprint siguiente de la estabilización, se programa una tarea técnica de limpieza para eliminar el flag y las bifurcaciones condicionales del código.
+### 6.3 Criterios de Corte y Kill Switch Inmediato (< 1 segundo)
+Si durante una fase de liberación ocurre cualquiera de las siguientes condiciones:
+* Tasa de error transaccional $> 1.0\%$.
+* Latencia promedio en p95 $> 500\text{ ms}$.
+* Caída del endpoint de salud `/health`.
+
+**Acción Obligatoria:** Se dispara inmediatamente el **Kill Switch** (desactivando el Feature Toggle en el dashboard de ConfigCat a `False`). La funcionalidad queda deshabilitada en menos de 1 segundo sin requerir re-compilaciones, pipelines ni re-despliegues de contenedores Docker.
+
+### 6.4 Higiene y Limpieza Obligatoria de Feature Toggles
+* **Límite de Vida Útil:** Un Feature Toggle no debe permanecer en el código más de **30 días** tras alcanzar 100% GA.
+* **Prohibición de Toggles Fantasma:** Queda terminantemente prohibido mantener flags por más de 45 días.
+* **Ticket Técnico Automático:** Al encender un flag al 100%, se crea automáticamente un issue en GitHub con la etiqueta `tech-debt:cleanup-toggle` para eliminar las bifurcaciones condicionales `if/else` en el sprint siguiente.
 
 ---
 
-## 📊 7. Métricas de Rendimiento del Flujo (Métricas DORA)
+## 💼 7. Resolución del Caso Práctico: "Pagos Express en Main" (Taller 6)
 
-Para evaluar y mejorar continuamente el desempeño del equipo, se realiza seguimiento de las 4 métricas DORA:
+Durante el taller se analizó el caso crítico: *"La funcionalidad de 'Pagos Express' ya está en main, pero nadie se atreve a activarla"*. El equipo acordó las siguientes soluciones formales a los 7 hechos problemáticos:
 
-1. **Deployment Frequency (Frecuencia de Despliegue):** Múltiples despliegues por día a través de merges a `main`.
-2. **Lead Time for Changes (Tiempo de Entrega de Cambios):** Menos de 4 horas desde el primer commit hasta la imagen Docker disponible en GHCR.
-3. **Change Failure Rate (Tasa de Fallos en Cambios):** Menor al 5%, mitigado inmediatamente mediante desactivación de Feature Flags en tiempo real o reversión automática.
-4. **Time to Restore Service (Tiempo de Restauración del Servicio):** Menos de 5 minutos mediante el apagado del flag en el dashboard de ConfigCat sin requerir re-despliegue de código.
+| # | Hecho Problemático del Caso | Decisión y Acuerdo del Equipo en Playbook v3.0 |
+| :-: | :--- | :--- |
+| **1** | PO quiere activar al 20% un viernes por presión comercial. | **Política de No-Releases en Viernes:** Los rollouts canary sólo se inician de lunes a jueves en horario laboral con equipo de guardia disponible. |
+| **2** | Último deploy falló health check 11 min y requirió rollback. | **Auditoría de Health Checks:** El endpoint `/health` debe probarse en el pipeline antes de enrutar tráfico. No se activan toggles en servicios inestables. |
+| **3** | 3 Feature Toggles llevan más de 45 días sin limpiar. | **Saneamiento Inmediato:** Se auditaron y crearon PRs de limpieza para retirar los 3 toggles antiguos (`promo_verano_2026`, `dark_mode_beta`, `checkout_v0_legacy`). |
+| **4** | Solo 4 integraciones a main en el sprint. | **Sliceado Fino Obligatorio:** Ninguna tarea puede superar 1 día de desarrollo. Se refuerza la integración diaria asistida por toggles. |
+| **5** | Rama viva 4 días por test flaky en CI. | **Cero Tolerancia a Tests Flaky:** Test inestable se aísla o corrige de inmediato. Ninguna rama puede esperar más de 24 horas por fallos espurios. |
+| **6** | Cero métricas de conversión o errores de pago. | **Telemetría Obligatoria:** Se implementó `PagosExpressService.obtener_metricas()` con tracking en tiempo real de tasa de error, latencia y conversión antes de tocar el flag. |
+| **7** | Negocio anunció internamente que ya está listo. | **Alineación PO-Stakeholders:** El PO comunica formalmente el estado de canary (20%) y no declara GA hasta completar las 48h de observación segura. |
+
+---
+
+## 📋 8. Checklist Oficial de Fase 1 (100% Cerrado y Validado)
+
+Con el cierre del Taller 6, el equipo valida que el 100% de los acuerdos y artefactos de la Fase 1 están completamente operativos:
+
+- [x] **1. Pipeline CI con Jobs Separados:** Job `test` (Ruff + Pytest) corre en cada PR; job `build_and_push` corre únicamente en push a `main`.
+- [x] **2. Ruleset de Branch Protection:** Rama `main` protegida contra pushes directos, exigiendo PR, checks automáticos verdes y aprobación.
+- [x] **3. Despliegue Continuo Automatizado:** Servicio desplegado en **Render** con auto-deploy activo y monitoreo en `/health`.
+- [x] **4. Gestión de Feature Flags con ConfigCat:** Integración con arquitectura Fail-Closed (`default=False`), targeting de usuarios y simulación de canary.
+- [x] **5. Adaptación Oficial del Sprint Review:** Formato probado basado en demostraciones en producción real, valor incremental y métricas.
+- [x] **6. Adaptación Oficial de la Sprint Retrospective:** Dinámica de 4 columnas centrada en salud del pipeline, disciplina TBD y máx 3 acciones.
+- [x] **7. Política de Liberación Segura:** Procedimiento establecido de rollout canary (20%), observación de 24-48h, Kill Switch y limpieza de toggles.
+
+---
+
+## 💬 9. Ronda Final de Cierre del Taller 6
+
+> **Pregunta de Cierre:** *"En una frase: ¿Qué cambia en nuestro próximo Review y Retro después de este taller?"*
+> 
+> **Respuesta Unánime del Equipo:**  
+> *"Nunca más llegaremos a una Review a mostrar diapositivas o código local sin desplegar: mostramos lo que ya corre en producción tras toggles con métricas reales. Y en cada Retro, antes de hablar de percepciones, auditaremos primero la salud del pipeline, el tiempo de los deploys y la disciplina de integrar a main cada día."*
