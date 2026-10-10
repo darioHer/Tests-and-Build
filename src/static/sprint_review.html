@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Taller 6: Sprint Review, Retrospective & Liberación Segura</title>
+  <title>Liberación Segura & Ceremonias CD</title>
   <style>
     :root {
       --bg: #090d16;
       --card-bg: rgba(30, 41, 59, 0.7);
-      --card-border: rgba(255, 255, 255, 0.1);
+      --card-border: rgba(255, 255, 255, 0.08);
       --text: #f8fafc;
       --text-muted: #94a3b8;
       --primary: #38bdf8;
@@ -35,10 +35,10 @@
 
     .container {
       width: 100%;
-      max-width: 1100px;
+      max-width: 1050px;
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: 1.25rem;
     }
 
     /* Header */
@@ -53,7 +53,7 @@
     }
 
     .brand-title {
-      font-size: 1.5rem;
+      font-size: 1.35rem;
       font-weight: 800;
       background: linear-gradient(135deg, #38bdf8, #c084fc);
       -webkit-background-clip: text;
@@ -74,7 +74,7 @@
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
-      padding: 0.3rem 0.65rem;
+      padding: 0.25rem 0.65rem;
       border-radius: 9999px;
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--card-border);
@@ -87,7 +87,22 @@
       height: 8px;
       border-radius: 50%;
     }
-    .badge-online .badge-dot { background: var(--success); box-shadow: 0 0 8px var(--success); }
+    .badge-online .badge-dot {
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.82rem;
+      padding: 0.3rem 0.6rem;
+      border-radius: 0.4rem;
+      transition: all 0.2s;
+    }
+    nav a:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
+    nav a.active { color: #c084fc; background: rgba(192, 132, 252, 0.15); }
 
     /* Navigation Tabs */
     .tabs-nav {
@@ -105,7 +120,7 @@
       padding: 0.5rem 1rem;
       border-radius: 0.5rem;
       font-weight: 600;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -125,49 +140,49 @@
       color: var(--primary);
     }
 
-    .tab-content { display: none; flex-direction: column; gap: 1.5rem; }
+    .tab-content { display: none; flex-direction: column; gap: 1.25rem; }
     .tab-content.active { display: flex; }
 
     /* Cards */
     .card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 1rem;
-      padding: 1.5rem;
+      border-radius: 0.85rem;
+      padding: 1.25rem;
       backdrop-filter: blur(12px);
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
     }
 
     .card-title {
-      font-size: 1.15rem;
+      font-size: 1.05rem;
       font-weight: 700;
-      margin-bottom: 1rem;
+      margin-bottom: 0.85rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
       color: #e2e8f0;
     }
 
-    /* Grid layout */
+    /* Grids */
     .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
+      gap: 1.25rem;
     }
 
     .grid-3 {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 1.25rem;
+      gap: 1rem;
     }
 
     .grid-4 {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 1rem;
+      gap: 0.85rem;
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 860px) {
       .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
     }
 
@@ -177,15 +192,15 @@
       color: #fff;
       border: none;
       border-radius: 0.5rem;
-      padding: 0.55rem 1.2rem;
+      padding: 0.5rem 1rem;
       font-weight: 600;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 0.4rem;
       transition: all 0.2s ease;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
     }
 
     .btn:hover {
@@ -195,57 +210,33 @@
 
     .btn-danger {
       background: linear-gradient(135deg, #dc2626, #b91c1c);
-      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
     }
-    .btn-danger:hover {
-      background: linear-gradient(135deg, #b91c1c, #991b1b);
-    }
+    .btn-danger:hover { background: linear-gradient(135deg, #b91c1c, #991b1b); }
 
     .btn-warning {
       background: linear-gradient(135deg, #d97706, #b45309);
-      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25);
+      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2);
     }
 
     .btn-success {
       background: linear-gradient(135deg, #059669, #047857);
-      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
     }
-
-    /* Tables */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 0.5rem;
-      font-size: 0.85rem;
-    }
-
-    th, td {
-      padding: 0.75rem 1rem;
-      text-align: left;
-      border-bottom: 1px solid var(--card-border);
-    }
-
-    th {
-      background: rgba(15, 23, 42, 0.6);
-      color: #38bdf8;
-      font-weight: 700;
-    }
-
-    tr:hover { background: rgba(255, 255, 255, 0.02); }
 
     /* Metrics display */
     .metric-card {
-      background: rgba(15, 23, 42, 0.7);
+      background: rgba(15, 23, 42, 0.65);
       border: 1px solid var(--card-border);
-      border-radius: 0.75rem;
-      padding: 1.25rem;
+      border-radius: 0.65rem;
+      padding: 1rem;
       display: flex;
       flex-direction: column;
-      gap: 0.35rem;
+      gap: 0.25rem;
     }
 
     .metric-title {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -253,65 +244,35 @@
     }
 
     .metric-val {
-      font-size: 1.75rem;
+      font-size: 1.5rem;
       font-weight: 800;
       color: #fff;
     }
 
     .metric-sub {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: var(--text-muted);
-    }
-
-    /* Miro Board Columns */
-    .retro-col {
-      background: rgba(15, 23, 42, 0.75);
-      border-radius: 0.75rem;
-      padding: 1rem;
-      border-top: 4px solid #38bdf8;
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .retro-item {
-      background: rgba(30, 41, 59, 0.8);
-      border: 1px solid var(--card-border);
-      border-radius: 0.5rem;
-      padding: 0.75rem;
-      font-size: 0.82rem;
-      line-height: 1.4;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-
-    .retro-tag {
-      display: inline-block;
-      font-size: 0.65rem;
-      font-weight: 700;
-      padding: 0.15rem 0.4rem;
-      border-radius: 4px;
-      margin-bottom: 0.35rem;
     }
 
     /* Checkout simulation card */
     .checkout-box {
       background: radial-gradient(circle at top left, #1e293b, #0f172a);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      border-radius: 0.85rem;
-      padding: 1.5rem;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
       display: flex;
       flex-direction: column;
-      gap: 1rem;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      gap: 0.85rem;
     }
 
     .alert-banner {
-      padding: 0.75rem 1rem;
+      padding: 0.65rem 0.85rem;
       border-radius: 0.5rem;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       display: flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.5rem;
+      line-height: 1.4;
     }
     .alert-success { background: rgba(16, 185, 129, 0.15); border: 1px solid var(--success); color: #34d399; }
     .alert-warning { background: rgba(245, 158, 11, 0.15); border: 1px solid var(--warning); color: #fbbf24; }
@@ -319,9 +280,9 @@
 
     footer {
       text-align: center;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: var(--text-muted);
-      margin-top: 1rem;
+      margin-top: 0.75rem;
     }
   </style>
 </head>
@@ -331,295 +292,142 @@
     <header>
       <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
         <div class="brand-title">
-          <span>🚀</span> Taller 6: Ceremonias en CD & Liberación Segura
+          <span>⚡</span> Control de Liberación & CD
         </div>
-        <nav style="display: flex; gap: 0.5rem;">
-          <a href="/" style="color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 0.85rem; padding: 0.3rem 0.6rem; border-radius: 0.4rem;">Calculadora</a>
-          <a href="/blog" style="color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 0.85rem; padding: 0.3rem 0.6rem; border-radius: 0.4rem;">Blog & Comentarios</a>
-          <a href="/sprint-review" style="color: #c084fc; text-decoration: none; font-weight: 700; font-size: 0.85rem; padding: 0.3rem 0.6rem; border-radius: 0.4rem; background: rgba(192, 132, 252, 0.15);">Taller 6 Lab</a>
+        <nav style="display: flex; gap: 0.4rem;">
+          <a href="/">Calculadora</a>
+          <a href="/blog">Blog</a>
+          <a href="/sprint-review" class="active">Panel CD</a>
         </nav>
       </div>
 
       <div class="header-badges">
-        <span class="badge" style="border-color: #a855f7; color: #d8b4fe;">Playbook v3.0</span>
+        <span class="badge" style="border-color: #a855f7; color: #d8b4fe;">v3.0</span>
         <span class="badge badge-online">
           <span class="badge-dot"></span>
           <span>Render CD: Auto-Deploy</span>
         </span>
-        <span class="badge" style="color: #38bdf8;">Fail-Closed Enabled</span>
+        <span class="badge" style="color: #38bdf8;">Fail-Closed</span>
       </div>
     </header>
 
     <!-- Navigation Tabs -->
     <div class="tabs-nav">
-      <button class="tab-btn active" onclick="showTab('tab-review')">
-        <span>🎬</span> 1. Sprint Review Adaptado
+      <button class="tab-btn active" onclick="showTab('tab-liberacion')">
+        <span>🛡️</span> Liberación Segura & Pagos
       </button>
-      <button class="tab-btn" onclick="showTab('tab-liberacion')">
-        <span>🛡️</span> 2. Liberación Segura ("Pagos Express")
+      <button class="tab-btn" onclick="showTab('tab-review')">
+        <span>📦</span> Módulos en Producción
       </button>
       <button class="tab-btn" onclick="showTab('tab-retro')">
-        <span>🔄</span> 3. Sprint Retrospective (Miro)
+        <span>📊</span> Métricas de Pipeline
       </button>
       <button class="tab-btn" onclick="showTab('tab-playbook')">
-        <span>📘</span> 4. Playbook 3.0 & Checklist Fase 1
+        <span>✔</span> Checklist Operativo
       </button>
     </div>
 
     <!-- ===================================================================== -->
-    <!-- TAB 1: SPRINT REVIEW ADAPTADO A CD + TBD                              -->
+    <!-- TAB 1: LIBERACIÓN SEGURA (PAGOS EXPRESS) - NÚCLEO FUNCIONAL           -->
     <!-- ===================================================================== -->
-    <div id="tab-review" class="tab-content active">
+    <div id="tab-liberacion" class="tab-content active">
       <div class="card">
-        <div class="card-title">
-          <span>1.1 Principios del Nuevo Sprint Review (CD + TBD)</span>
-          <span class="badge" style="color: #34d399;">Orientado a Producción Real</span>
-        </div>
-        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
-          En Continuous Deployment, la Review ya no es una reunión para mostrar código en la laptop del desarrollador o en staging. Es una demostración de valor real que ya se encuentra en producción (o listo para activarse mediante Feature Toggles) con métricas y retroalimentación directa.
-        </p>
-
-        <table>
-          <thead>
-            <tr>
-              <th>Dimensión</th>
-              <th>Sprint Review Clásico</th>
-              <th>Sprint Review Adaptado (CD + TBD)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Enfoque de Demo</strong></td>
-              <td>Demo del incremento del sprint en ambiente local o Staging.</td>
-              <td><span style="color: #38bdf8; font-weight: 700;">Demo de lo que ya está (o puede estar) en producción en Render.</span></td>
-            </tr>
-            <tr>
-              <td><strong>Disponibilidad</strong></td>
-              <td>"Todo o nada" al final de 2 semanas de espera.</td>
-              <td><span style="color: #34d399; font-weight: 700;">Valor incremental diario + Feature Toggles dinámicos.</span></td>
-            </tr>
-            <tr>
-              <td><strong>Ciclo de Feedback</strong></td>
-              <td>Feedback diferido al final del sprint.</td>
-              <td><span style="color: #c084fc; font-weight: 700;">Feedback continuo + telemetría y validación real con usuarios.</span></td>
-            </tr>
-            <tr>
-              <td><strong>Pregunta Central</strong></td>
-              <td>¿Qué construimos en estas 2 semanas?</td>
-              <td><span style="color: #fbbf24; font-weight: 700;">¿Qué valor recibieron realmente los usuarios?</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="card">
-        <div class="card-title">
-          <span>1.2 Simulación de Demos de Incrementos en Vivo (3 Ítems Reales)</span>
-          <span style="font-size: 0.8rem; color: var(--text-muted);">Estructura Obligatoria de 4-5 min</span>
-        </div>
-
-        <div class="grid-3">
-          <!-- Demo 1 -->
-          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--card-border); border-radius: 0.75rem; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-weight: 700; color: #38bdf8; font-size: 0.95rem;">Incremento 1: Comentarios Blog</span>
-              <span class="badge" style="color: #34d399;">100% GA</span>
-            </div>
-            <div style="font-size: 0.8rem; color: var(--text-muted);">
-              <strong>Problema de usuario:</strong> Los lectores no podían interactuar ni responder dudas en artículos técnicos sobre TBD.
-            </div>
-            <div style="font-size: 0.8rem; color: #cbd5e1;">
-              <strong>Detrás de toggle:</strong> <code>comments_enabled</code> (activo). Admite hilos anidados y principio Fail-Closed.
-            </div>
-            <div style="font-size: 0.8rem; color: #a855f7;">
-              <strong>Métrica de valor:</strong> +45% de engagement en lectura técnica. Cero incidentes de inyección o caídas.
-            </div>
-            <div style="margin-top: auto; padding-top: 0.5rem;">
-              <a href="/blog" class="btn" style="width: 100%; justify-content: center; text-decoration: none;">Ver Demo en Blog</a>
-            </div>
+        <!-- Barra de Control del Toggle -->
+        <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid var(--card-border); border-radius: 0.65rem; padding: 0.85rem 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 700;">
+            <span style="color: #cbd5e1;">Feature Toggle: <code>pagos_express_enabled</code></span>
+            <span id="current-toggle-state" class="badge" style="color: #f87171;">0% (Fail-Closed)</span>
           </div>
-
-          <!-- Demo 2 -->
-          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--card-border); border-radius: 0.75rem; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-weight: 700; color: #c084fc; font-size: 0.95rem;">Incremento 2: Módulo Matemático</span>
-              <span class="badge" style="color: #fbbf24;">Rollout 10%-100%</span>
-            </div>
-            <div style="font-size: 0.8rem; color: var(--text-muted);">
-              <strong>Problema de usuario:</strong> Solo se admitía suma básica; faltaban potencias, raíces y división segura.
-            </div>
-            <div style="font-size: 0.8rem; color: #cbd5e1;">
-              <strong>Detrás de toggle:</strong> <code>potencia_enabled</code> y <code>raiz_enabled</code> en ConfigCat.
-            </div>
-            <div style="font-size: 0.8rem; color: #a855f7;">
-              <strong>Métrica de valor:</strong> Cobertura de tests al 100% (79 pruebas en verde), latencia &lt; 20ms en Render.
-            </div>
-            <div style="margin-top: auto; padding-top: 0.5rem;">
-              <a href="/" class="btn" style="width: 100%; justify-content: center; text-decoration: none;">Ver Demo Calculadora</a>
-            </div>
-          </div>
-
-          <!-- Demo 3 -->
-          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 0.75rem; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-weight: 700; color: #34d399; font-size: 0.95rem;">Incremento 3: Pagos Express (1-Clic)</span>
-              <span class="badge" id="badge-demo-pago" style="color: #f87171;">Toggle: OFF (0%)</span>
-            </div>
-            <div style="font-size: 0.8rem; color: var(--text-muted);">
-              <strong>Problema de usuario:</strong> Checkout lento de 5 pasos que generaba un 65% de abandono de carrito.
-            </div>
-            <div style="font-size: 0.8rem; color: #cbd5e1;">
-              <strong>Detrás de toggle:</strong> <code>pagos_express_enabled</code> (Caso de estudio Taller 6).
-            </div>
-            <div style="font-size: 0.8rem; color: #a855f7;">
-              <strong>Métrica esperada:</strong> Subir conversión al 85% con Kill Switch &lt; 1s en caso de anomalía.
-            </div>
-            <div style="margin-top: auto; padding-top: 0.5rem;">
-              <button onclick="showTab('tab-liberacion')" class="btn btn-warning" style="width: 100%; justify-content: center;">Simular Liberación Segura</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===================================================================== -->
-    <!-- TAB 2: LIBERACIÓN SEGURA ("PAGOS EXPRESS")                            -->
-    <!-- ===================================================================== -->
-    <div id="tab-liberacion" class="tab-content">
-      <div class="card">
-        <div class="card-title">
-          <span>Caso de Estudio: "La funcionalidad de 'Pagos Express' ya está en main, pero nadie se atreve a activarla"</span>
-          <span class="badge" style="color: #f87171;">Resolución en Vivo</span>
-        </div>
-        <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1rem;">
-          <strong>Contexto:</strong> La historia lleva 9 días integrada en main protegida por el toggle <code>pagos-express-v1</code>. Pasó CI y está desplegada en Render, pero existe miedo porque el último deploy falló el health check 11 min y no existían métricas claras de conversión o error. Aquí resolvemos la estrategia de liberación controlada:
-        </p>
-
-        <!-- Estrategia de Liberación Acordada -->
-        <div class="grid-3" style="margin-bottom: 1.5rem;">
-          <div class="metric-card" style="border-left: 4px solid #38bdf8;">
-            <span class="metric-title">1. ¿A quién activamos primero?</span>
-            <div style="font-size: 0.95rem; font-weight: 700; color: #38bdf8; margin-top: 0.25rem;">Cohorte Canary (20%)</div>
-            <span class="metric-sub">Usuarios beta + empleados internos antes de abrir al 100% comercial.</span>
-          </div>
-          <div class="metric-card" style="border-left: 4px solid #fbbf24;">
-            <span class="metric-title">2. ¿Qué métrica observamos?</span>
-            <div style="font-size: 0.95rem; font-weight: 700; color: #fbbf24; margin-top: 0.25rem;">Tasa de Error &lt; 0.5% | Latencia &lt; 200ms</div>
-            <span class="metric-sub">Observabilidad de pasarela bancaria y conversión en tiempo real.</span>
-          </div>
-          <div class="metric-card" style="border-left: 4px solid #f87171;">
-            <span class="metric-title">3. Criterio de Rollback / Kill Switch</span>
-            <div style="font-size: 0.95rem; font-weight: 700; color: #f87171; margin-top: 0.25rem;">Tasa de Error &gt; 1% ➔ Toggle a OFF</div>
-            <span class="metric-sub">Desactivación inmediata en ConfigCat sin re-desplegar ni tocar código.</span>
+          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+            <button class="btn btn-danger" onclick="setRollout(0)">🔴 0% OFF</button>
+            <button class="btn btn-warning" onclick="setRollout(20)">🟡 20% Canary</button>
+            <button class="btn btn-success" onclick="setRollout(100)">🟢 100% GA</button>
+            <button class="btn" style="background: #991b1b; border: 1px solid #ef4444;" onclick="triggerKillSwitch()">🚨 KILL SWITCH (&lt; 1s)</button>
           </div>
         </div>
 
-        <!-- Controles interactivos del Toggle -->
-        <div style="background: rgba(15, 23, 42, 0.9); border: 1px solid var(--card-border); border-radius: 0.75rem; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-            <div style="font-weight: 700; color: #e2e8f0; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem;">
-              <span>🎛️ Control de Rollout en ConfigCat:</span>
-              <span id="current-toggle-state" class="badge" style="color: #f87171;">0% (Apagado / Fail-Closed)</span>
-            </div>
-            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-              <button class="btn btn-danger" onclick="setRollout(0)" title="Apagar para todos (0%)">🔴 0% (OFF)</button>
-              <button class="btn btn-warning" onclick="setRollout(20)" title="Activar cohorte canary 20%">🟡 20% Canary</button>
-              <button class="btn btn-success" onclick="setRollout(100)" title="Lanzamiento General (100%)">🟢 100% GA</button>
-              <button class="btn" style="background: #991b1b; border: 1px solid #ef4444;" onclick="triggerKillSwitch()" title="Simula apagado de emergencia">🚨 KILL SWITCH (&lt; 1s)</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Consola de Pago y Telemetría -->
+        <!-- Checkout y Telemetría -->
         <div class="grid-2">
           <!-- Columna Izquierda: Simulación del Checkout -->
           <div class="checkout-box">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-weight: 800; font-size: 1.1rem; color: #fff;">🛍️ Tienda Online — Checkout</span>
-              <span class="badge" style="color: #38bdf8;">Plan Profesional TBD</span>
+              <span style="font-weight: 800; font-size: 1rem; color: #fff;">🛍️ Checkout Express</span>
+              <span class="badge" style="color: #38bdf8;">Plan Pro CI/CD</span>
             </div>
-            <div style="font-size: 0.85rem; color: var(--text-muted);">
-              Suscripción mensual al Pipeline de CI/CD continuo y telemetría de Feature Flags.
-            </div>
-            <div style="font-size: 1.6rem; font-weight: 800; color: #34d399;">
+            
+            <div style="font-size: 1.5rem; font-weight: 800; color: #34d399;">
               $49.99 USD
             </div>
 
             <!-- Botón condicional de Pago Express -->
-            <div id="express-checkout-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <div id="express-checkout-container" style="display: flex; flex-direction: column; gap: 0.65rem;">
               <div id="pago-status-banner" class="alert-banner alert-warning">
                 <span>🔒</span>
-                <span id="pago-status-msg">Funcionalidad protegida por Feature Toggle (0% OFF). El botón está oculto para usuarios generales.</span>
+                <span id="pago-status-msg">Toggle en 0% OFF. Funcionalidad oculta para usuarios generales.</span>
               </div>
 
               <div id="btn-pago-express-wrapper" style="display: none;">
-                <button id="btn-pagar-express" class="btn" style="width: 100%; padding: 0.85rem; font-size: 1rem; justify-content: center; background: linear-gradient(135deg, #10b981, #059669);" onclick="ejecutarPagoExpress(false)">
-                  ⚡ Pagar con 1 Solo Clic (Express)
+                <button id="btn-pagar-express" class="btn" style="width: 100%; padding: 0.75rem; font-size: 0.95rem; justify-content: center; background: linear-gradient(135deg, #10b981, #059669);" onclick="ejecutarPagoExpress(false)">
+                  ⚡ Pagar con 1 Clic (Express)
                 </button>
-                <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
-                  <button class="btn-danger" style="font-size: 0.75rem; padding: 0.25rem 0.6rem; border-radius: 4px; border: none; cursor: pointer;" onclick="ejecutarPagoExpress(true)">
-                    ⚠️ Simular Falla Bancaria (Test Kill Switch)
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.4rem;">
+                  <button class="btn-danger" style="font-size: 0.72rem; padding: 0.25rem 0.5rem; border-radius: 4px; border: none; cursor: pointer;" onclick="ejecutarPagoExpress(true)">
+                    ⚠️ Simular Falla (Test Kill Switch)
                   </button>
-                  <span style="font-size: 0.75rem; color: var(--text-muted);">Proceso instantáneo con token</span>
+                  <span style="font-size: 0.72rem; color: var(--text-muted);">Token instantáneo</span>
                 </div>
               </div>
             </div>
 
             <!-- Resultado de transacción -->
-            <div id="tx-result-box" style="display: none; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--card-border); border-radius: 0.5rem; padding: 0.75rem; font-size: 0.8rem; font-family: monospace;">
+            <div id="tx-result-box" style="display: none; background: rgba(15, 23, 42, 0.9); border: 1px solid var(--card-border); border-radius: 0.5rem; padding: 0.65rem; font-size: 0.78rem; font-family: monospace;">
             </div>
           </div>
 
-          <!-- Columna Derecha: Telemetría y Observabilidad en Tiempo Real -->
-          <div style="display: flex; flex-direction: column; gap: 1rem;">
+          <!-- Columna Derecha: Telemetría en Tiempo Real -->
+          <div style="display: flex; flex-direction: column; gap: 0.85rem;">
             <div class="card-title" style="margin-bottom: 0;">
-              <span>📊 Telemetría en Tiempo Real (24-48h Plan)</span>
+              <span>📊 Telemetría en Tiempo Real</span>
               <span id="metric-health-badge" class="badge" style="color: #34d399;">HEALTHY</span>
             </div>
 
             <div class="grid-2">
               <div class="metric-card">
-                <span class="metric-title">Transacciones Totales</span>
+                <span class="metric-title">Transacciones</span>
                 <div class="metric-val" id="metric-total">0</div>
                 <span class="metric-sub" id="metric-success-sub">0 aprobadas / 0 fallidas</span>
               </div>
               <div class="metric-card">
                 <span class="metric-title">Tasa de Error</span>
                 <div class="metric-val" id="metric-error-rate" style="color: #34d399;">0.0%</div>
-                <span class="metric-sub">Límite de alerta: 1.0%</span>
+                <span class="metric-sub">Límite SLA: &lt; 1.0%</span>
               </div>
               <div class="metric-card">
-                <span class="metric-title">Latencia Promedio</span>
+                <span class="metric-title">Latencia</span>
                 <div class="metric-val" id="metric-latency">24.5 ms</div>
-                <span class="metric-sub">Objetivo SLA: &lt; 200 ms</span>
+                <span class="metric-sub">Objetivo: &lt; 200 ms</span>
               </div>
               <div class="metric-card">
-                <span class="metric-title">Conversión Estimada</span>
+                <span class="metric-title">Conversión</span>
                 <div class="metric-val" id="metric-conversion" style="color: #38bdf8;">0.0%</div>
-                <span class="metric-sub">Meta comercial: &gt; 80%</span>
+                <span class="metric-sub">Meta: &gt; 80%</span>
               </div>
             </div>
 
-            <!-- Auditoría de Deuda Técnica (Flags Obsoletos) -->
-            <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 0.75rem; padding: 1rem;">
-              <div style="font-size: 0.85rem; font-weight: 700; color: #fbbf24; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem;">
-                <span>🧹 Auditoría de Limpieza de Toggles (&gt; 45 Días):</span>
+            <!-- Auditoría compacta de toggles -->
+            <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--card-border); border-radius: 0.65rem; padding: 0.75rem;">
+              <div style="font-size: 0.75rem; font-weight: 700; color: #fbbf24; margin-bottom: 0.4rem; display: flex; justify-content: space-between;">
+                <span>🧹 Auditoría de Toggles (&gt; 45 días)</span>
+                <span style="color: var(--text-muted); font-size: 0.7rem;">3 retirados</span>
               </div>
-              <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.5rem;">
-                Resolución del hecho #3 del caso: 3 flags acumulaban deuda técnica y fueron programados para remoción inmediata.
-              </div>
-              <div style="display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.75rem; font-family: monospace;">
-                <div style="display: flex; justify-content: space-between; padding: 0.25rem 0.5rem; background: rgba(0,0,0,0.2); border-radius: 4px;">
-                  <span>promo_verano_2026 (52 días activos)</span>
-                  <span style="color: #f87171;">[PR de limpieza creado]</span>
+              <div style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.72rem; font-family: monospace;">
+                <div style="display: flex; justify-content: space-between; padding: 0.2rem 0.4rem; background: rgba(0,0,0,0.25); border-radius: 4px;">
+                  <span style="color: #cbd5e1;">promo_verano_2026</span>
+                  <span style="color: #f87171;">PR de limpieza creado</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; padding: 0.25rem 0.5rem; background: rgba(0,0,0,0.2); border-radius: 4px;">
-                  <span>dark_mode_beta (48 días activos)</span>
-                  <span style="color: #f87171;">[PR de limpieza creado]</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding: 0.25rem 0.5rem; background: rgba(0,0,0,0.2); border-radius: 4px;">
-                  <span>checkout_v0_legacy (60 días activos)</span>
-                  <span style="color: #f87171;">[Código muerto eliminado]</span>
+                <div style="display: flex; justify-content: space-between; padding: 0.2rem 0.4rem; background: rgba(0,0,0,0.25); border-radius: 4px;">
+                  <span style="color: #cbd5e1;">checkout_v0_legacy</span>
+                  <span style="color: #f87171;">Código eliminado</span>
                 </div>
               </div>
             </div>
@@ -629,178 +437,149 @@
     </div>
 
     <!-- ===================================================================== -->
-    <!-- TAB 3: SPRINT RETROSPECTIVE ADAPTADO                                  -->
+    <!-- TAB 2: MÓDULOS EN PRODUCCIÓN                                          -->
+    <!-- ===================================================================== -->
+    <div id="tab-review" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <span>Incrementos Activos en Producción</span>
+          <span class="badge" style="color: #34d399;">Render Live</span>
+        </div>
+
+        <div class="grid-3">
+          <!-- Item 1 -->
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--card-border); border-radius: 0.65rem; padding: 1rem; display: flex; flex-direction: column; gap: 0.65rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: #38bdf8; font-size: 0.9rem;">Comentarios Blog</span>
+              <span class="badge" style="color: #34d399;">100% GA</span>
+            </div>
+            <div style="font-size: 0.78rem; color: #cbd5e1;">
+              Hilos anidados y respuestas protegidas por <code>comments_enabled</code> con principio Fail-Closed.
+            </div>
+            <div style="margin-top: auto; padding-top: 0.4rem;">
+              <a href="/blog" class="btn" style="width: 100%; justify-content: center; text-decoration: none;">Abrir Blog</a>
+            </div>
+          </div>
+
+          <!-- Item 2 -->
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--card-border); border-radius: 0.65rem; padding: 1rem; display: flex; flex-direction: column; gap: 0.65rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: #c084fc; font-size: 0.9rem;">Módulo Matemático</span>
+              <span class="badge" style="color: #34d399;">100% GA</span>
+            </div>
+            <div style="font-size: 0.78rem; color: #cbd5e1;">
+              Operaciones avanzadas (potencias, raíces, división segura). Cobertura total de tests.
+            </div>
+            <div style="margin-top: auto; padding-top: 0.4rem;">
+              <a href="/" class="btn" style="width: 100%; justify-content: center; text-decoration: none;">Abrir Calculadora</a>
+            </div>
+          </div>
+
+          <!-- Item 3 -->
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 0.65rem; padding: 1rem; display: flex; flex-direction: column; gap: 0.65rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: #34d399; font-size: 0.9rem;">Pagos Express</span>
+              <span class="badge" id="badge-demo-pago" style="color: #f87171;">Toggle: OFF (0%)</span>
+            </div>
+            <div style="font-size: 0.78rem; color: #cbd5e1;">
+              Checkout de 1 clic con control canary y Kill Switch instantáneo ante anomalías.
+            </div>
+            <div style="margin-top: auto; padding-top: 0.4rem;">
+              <button onclick="showTab('tab-liberacion')" class="btn btn-warning" style="width: 100%; justify-content: center;">Gestionar Rollout</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 3: MÉTRICAS DE FLUXO & PIPELINE                                   -->
     <!-- ===================================================================== -->
     <div id="tab-retro" class="tab-content">
       <div class="card">
         <div class="card-title">
-          <span>2. Nuevos Focos de la Sprint Retrospective (Métricas DORA & Pipeline)</span>
-          <span class="badge" style="color: #38bdf8;">Inspección del Flujo de Valor</span>
+          <span>Salud del Pipeline & Métricas DORA</span>
+          <span class="badge" style="color: #38bdf8;">Flujo Continuo</span>
         </div>
-        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.25rem;">
-          La Retrospective en TBD se enfoca en tres pilares técnicos y de flujo: <strong>Salud del Pipeline</strong>, <strong>Disciplina TBD</strong> y <strong>Flujo de Valor Real</strong>.
-        </p>
 
-        <!-- Métricas de los 3 Focos -->
-        <div class="grid-3" style="margin-bottom: 1.5rem;">
+        <div class="grid-4" style="margin-bottom: 1.25rem;">
           <div class="metric-card">
-            <span class="metric-title">1. Salud del Pipeline</span>
-            <div style="font-size: 0.95rem; font-weight: 700; color: #34d399; margin: 0.35rem 0;">CI Verde: 100% de Éxito</div>
-            <div style="font-size: 0.78rem; color: var(--text-muted);">
-              • Tiempo medio de build en CI: <strong>42 seg</strong><br/>
-              • Tiempo de deploy Render: <strong>1.8 min</strong><br/>
-              • Rollbacks manuales en sprint: <strong>0</strong>
-            </div>
+            <span class="metric-title">CI Build Time</span>
+            <div class="metric-val" style="color: #34d399;">42 s</div>
+            <span class="metric-sub">Tests aislados por PR</span>
           </div>
-
           <div class="metric-card">
-            <span class="metric-title">2. Disciplina TBD</span>
-            <div style="font-size: 0.95rem; font-weight: 700; color: #38bdf8; margin: 0.35rem 0;">Integración Diaria a Main</div>
-            <div style="font-size: 0.78rem; color: var(--text-muted);">
-              • Vida promedio de ramas: <strong>&lt; 4 horas</strong><br/>
-              • Ninguna rama abierta &gt; 24h<br/>
-              • Cobertura de tests: <strong>79/79 passing</strong>
-            </div>
+            <span class="metric-title">Deploy Render</span>
+            <div class="metric-val" style="color: #38bdf8;">1.8 min</div>
+            <span class="metric-sub">Auto-deploy con healthcheck</span>
           </div>
-
           <div class="metric-card">
-            <span class="metric-title">3. Flujo de Valor Real</span>
-            <div style="font-size: 0.95rem; font-weight: 700; color: #c084fc; margin: 0.35rem 0;">Lead Time &lt; 2 Horas</div>
-            <div style="font-size: 0.78rem; color: var(--text-muted);">
-              • Desde commit a GHCR y Render<br/>
-              • Desacoplamiento total Deploy vs Release<br/>
-              • Rollout progresivo por ConfigCat
-            </div>
+            <span class="metric-title">Vida de Ramas</span>
+            <div class="metric-val" style="color: #c084fc;">&lt; 4 h</div>
+            <span class="metric-sub">Disciplina Trunk-Based</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-title">Lead Time</span>
+            <div class="metric-val" style="color: #fbbf24;">&lt; 2 h</div>
+            <span class="metric-sub">De commit a producción</span>
           </div>
         </div>
 
-        <!-- Tablero Miro Dinámica de Retrospective -->
-        <div class="card-title" style="margin-bottom: 0.75rem;">
-          <span>Tablero de Retrospectiva del Equipo (Dinámica Miro)</span>
-          <span style="font-size: 0.8rem; color: var(--text-muted);">Regla: Máximo 3 acciones concretas asignables</span>
+        <div class="card-title" style="margin-bottom: 0.65rem;">
+          <span>Reglas Operativas de Liberación</span>
         </div>
 
-        <div class="grid-4">
-          <!-- Columna 1: Funcionó bien -->
-          <div class="retro-col" style="border-top-color: #10b981;">
-            <div style="font-weight: 700; font-size: 0.88rem; color: #34d399;">🟢 Funcionó Bien en el Flujo</div>
-            <div class="retro-item">
-              <span class="retro-tag" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">Pipeline</span><br/>
-              El pipeline separa <code>test</code> y <code>build_and_push</code>. Las ramas PR corren tests en &lt; 20s sin generar imágenes pesadas.
-            </div>
-            <div class="retro-item">
-              <span class="retro-tag" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">Feature Flags</span><br/>
-              Principio Fail-Closed impecable: cuando no hay red o SDK key, la app opera segura sin encender features por error.
-            </div>
-            <div class="retro-item">
-              <span class="retro-tag" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">Auto-deploy</span><br/>
-              Render levanta el contenedor automáticamente tras el merge a main, verificando el endpoint <code>/health</code>.
-            </div>
+        <div class="grid-3">
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--card-border); border-left: 3px solid #38bdf8; border-radius: 0.5rem; padding: 0.85rem;">
+            <div style="font-weight: 700; font-size: 0.82rem; color: #38bdf8; margin-bottom: 0.25rem;">Vida Útil de Toggles</div>
+            <div style="font-size: 0.76rem; color: var(--text-muted);">Máximo 30 días tras GA para eliminar deuda técnica.</div>
           </div>
-
-          <!-- Columna 2: Fricción -->
-          <div class="retro-col" style="border-top-color: #f59e0b;">
-            <div style="font-weight: 700; font-size: 0.88rem; color: #fbbf24;">🟡 Generó Fricción</div>
-            <div class="retro-item">
-              <span class="retro-tag" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;">Deuda Técnica</span><br/>
-              Acumulación de 3 toggles viejos (&gt; 45 días) que nadie se responsabilizó por limpiar.
-            </div>
-            <div class="retro-item">
-              <span class="retro-tag" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;">Tests Flaky</span><br/>
-              Un test intermitente de red causó retrasos en una rama de integración durante el sprint.
-            </div>
-            <div class="retro-item">
-              <span class="retro-tag" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;">Presión PO</span><br/>
-              Querer encender al 20% en viernes sin tener telemetría previa de pasarela de pagos.
-            </div>
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--card-border); border-left: 3px solid #10b981; border-radius: 0.5rem; padding: 0.85rem;">
+            <div style="font-weight: 700; font-size: 0.82rem; color: #34d399; margin-bottom: 0.25rem;">Observabilidad Previa</div>
+            <div style="font-size: 0.76rem; color: var(--text-muted);">Métricas de error y latencia activas antes de rollout &gt; 0%.</div>
           </div>
-
-          <!-- Columna 3: Miedo o rotura -->
-          <div class="retro-col" style="border-top-color: #ef4444;">
-            <div style="font-weight: 700; font-size: 0.88rem; color: #f87171;">🔴 Rompió Flujo / Miedo</div>
-            <div class="retro-item">
-              <span class="retro-tag" style="background: rgba(239, 68, 68, 0.2); color: #f87171;">Incidentes</span><br/>
-              Caída del health check durante 11 minutos hace 2 días que requirió rollback manual por falta de canary inicial.
-            </div>
-            <div class="retro-item">
-              <span class="retro-tag" style="background: rgba(239, 68, 68, 0.2); color: #f87171;">Observabilidad</span><br/>
-              No saber si una transacción fallaba en producción por no tener dashboard de métricas de pago.
-            </div>
-          </div>
-
-          <!-- Columna 4: Acciones concretas (máx 3) -->
-          <div class="retro-col" style="border-top-color: #a855f7;">
-            <div style="font-weight: 700; font-size: 0.88rem; color: #c084fc;">🎯 Acciones de Mejora (3 Máx)</div>
-            <div class="retro-item" style="border: 1px solid rgba(168, 85, 247, 0.5);">
-              <span class="retro-tag" style="background: rgba(168, 85, 247, 0.2); color: #c084fc;">Acción #1</span><br/>
-              <strong>Política de Limpieza de Flags:</strong> Máximo 30 días de vida para cualquier toggle. Crear ticket técnico obligatorio de retiro tras GA.<br/>
-              <em style="color: var(--text-muted); font-size: 0.72rem;">Asignado a: Tech Lead</em>
-            </div>
-            <div class="retro-item" style="border: 1px solid rgba(168, 85, 247, 0.5);">
-              <span class="retro-tag" style="background: rgba(168, 85, 247, 0.2); color: #c084fc;">Acción #2</span><br/>
-              <strong>Telemetría de Pasarela & Kill Switch:</strong> Obligatorio tener métricas de latencia y tasa de error antes de autorizar cualquier rollout &gt; 0%.<br/>
-              <em style="color: var(--text-muted); font-size: 0.72rem;">Asignado a: Dev Team</em>
-            </div>
-            <div class="retro-item" style="border: 1px solid rgba(168, 85, 247, 0.5);">
-              <span class="retro-tag" style="background: rgba(168, 85, 247, 0.2); color: #c084fc;">Acción #3</span><br/>
-              <strong>No Releases en Viernes sin Guardia:</strong> Activaciones canary de alto impacto solo se ejecutan de lunes a jueves con observabilidad de 24h.<br/>
-              <em style="color: var(--text-muted); font-size: 0.72rem;">Asignado a: PO & SM</em>
-            </div>
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--card-border); border-left: 3px solid #f59e0b; border-radius: 0.5rem; padding: 0.85rem;">
+            <div style="font-weight: 700; font-size: 0.82rem; color: #fbbf24; margin-bottom: 0.25rem;">Guardia en Rollouts</div>
+            <div style="font-size: 0.76rem; color: var(--text-muted);">Cambios canary monitoreados con Kill Switch verificado.</div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- ===================================================================== -->
-    <!-- TAB 4: PLAYBOOK 3.0 & CHECKLIST FASE 1                                -->
+    <!-- TAB 4: CHECKLIST OPERATIVO                                            -->
     <!-- ===================================================================== -->
     <div id="tab-playbook" class="tab-content">
       <div class="card">
         <div class="card-title">
-          <span>Checklist de Fase 1 — 100% Cerrado y Validado</span>
-          <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">Fase 1 Completa ✔</span>
-        </div>
-        <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1rem;">
-          Con la finalización de los Talleres 1 al 6, todo el ciclo de Trunk-Based Development, Continuous Deployment y Liberación Segura queda formalmente auditado y operativo:
-        </p>
-
-        <div style="display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.85rem;">
-          <div style="display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.85rem; background: rgba(15, 23, 42, 0.6); border-radius: 0.5rem; border: 1px solid var(--card-border);">
-            <span style="color: #34d399; font-weight: 800;">[✔]</span>
-            <span><strong>Pipeline CI Separado:</strong> Job <code>test</code> corre en cada PR/push; job <code>build_and_push</code> solo en push a <code>main</code>.</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.85rem; background: rgba(15, 23, 42, 0.6); border-radius: 0.5rem; border: 1px solid var(--card-border);">
-            <span style="color: #34d399; font-weight: 800;">[✔]</span>
-            <span><strong>Ruleset de Branch Protection:</strong> <code>main</code> protegida obligando PR, aprobación previa y checks de CI en verde.</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.85rem; background: rgba(15, 23, 42, 0.6); border-radius: 0.5rem; border: 1px solid var(--card-border);">
-            <span style="color: #34d399; font-weight: 800;">[✔]</span>
-            <span><strong>Despliegue Continuo en Render:</strong> Auto-deploy configurado con verificación del endpoint <code>/health</code>.</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.85rem; background: rgba(15, 23, 42, 0.6); border-radius: 0.5rem; border: 1px solid var(--card-border);">
-            <span style="color: #34d399; font-weight: 800;">[✔]</span>
-            <span><strong>Gestión de Feature Flags (ConfigCat):</strong> Arquitectura Fail-Closed implementada con soporte de canary targeting.</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.85rem; background: rgba(15, 23, 42, 0.6); border-radius: 0.5rem; border: 1px solid var(--card-border);">
-            <span style="color: #34d399; font-weight: 800;">[✔]</span>
-            <span><strong>Sprint Review Adaptado:</strong> Formato obligatorio estructurado en valor de producción, demostración en vivo y telemetría.</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.85rem; background: rgba(15, 23, 42, 0.6); border-radius: 0.5rem; border: 1px solid var(--card-border);">
-            <span style="color: #34d399; font-weight: 800;">[✔]</span>
-            <span><strong>Sprint Retrospective Adaptada:</strong> Inspección focalizada en salud del pipeline, disciplina TBD y máximo 3 acciones.</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.85rem; background: rgba(15, 23, 42, 0.6); border-radius: 0.5rem; border: 1px solid var(--card-border);">
-            <span style="color: #34d399; font-weight: 800;">[✔]</span>
-            <span><strong>Política de Liberación Segura:</strong> Rollout canary progresivo, monitoreo de 24-48h, Kill Switch y limpieza de toggles.</span>
-          </div>
+          <span>Checklist Operativo de Calidad & Liberación</span>
+          <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">100% Validado</span>
         </div>
 
-        <div style="margin-top: 1.5rem; background: rgba(56, 189, 248, 0.1); border: 1px dashed var(--primary); border-radius: 0.75rem; padding: 1.25rem;">
-          <div style="font-weight: 700; color: #38bdf8; font-size: 0.95rem; margin-bottom: 0.35rem;">
-            💬 Ronda Final: "¿Qué cambia en nuestro próximo Review y Retro después de este taller?"
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; font-size: 0.8rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 0.75rem; background: rgba(15, 23, 42, 0.6); border-radius: 0.5rem; border: 1px solid var(--card-border);">
+            <span style="color: #34d399; font-weight: 800;">✔</span>
+            <span><strong>Pipeline CI Separado:</strong> Job <code>test</code> rápido en PR y <code>build_push</code> en <code>main</code>.</span>
           </div>
-          <div style="font-size: 0.85rem; color: #cbd5e1; font-style: italic; line-height: 1.5;">
-            "A partir de este taller, nunca más llegaremos a una Review a mostrar diapositivas o código local sin desplegar: mostramos lo que ya corre en producción tras toggles con métricas reales. Y en cada Retro, antes de hablar de percepciones, auditaremos primero la salud del pipeline, el tiempo de los deploys y la disciplina de integrar a main cada día."
+          <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 0.75rem; background: rgba(15, 23, 42, 0.6); border-radius: 0.5rem; border: 1px solid var(--card-border);">
+            <span style="color: #34d399; font-weight: 800;">✔</span>
+            <span><strong>Branch Protection:</strong> PR requerido, checks verdes obligatorios y sin pushes directos.</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 0.75rem; background: rgba(15, 23, 42, 0.6); border-radius: 0.5rem; border: 1px solid var(--card-border);">
+            <span style="color: #34d399; font-weight: 800;">✔</span>
+            <span><strong>Continuous Deployment:</strong> Auto-deploy en Render con validación del endpoint <code>/health</code>.</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 0.75rem; background: rgba(15, 23, 42, 0.6); border-radius: 0.5rem; border: 1px solid var(--card-border);">
+            <span style="color: #34d399; font-weight: 800;">✔</span>
+            <span><strong>Fail-Closed Security:</strong> Sin credenciales o ante caída de red, los flags operan apagados.</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 0.75rem; background: rgba(15, 23, 42, 0.6); border-radius: 0.5rem; border: 1px solid var(--card-border);">
+            <span style="color: #34d399; font-weight: 800;">✔</span>
+            <span><strong>Rollout Progresivo:</strong> Desacople de Deploy vs Release con cohortes de usuario.</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 0.75rem; background: rgba(15, 23, 42, 0.6); border-radius: 0.5rem; border: 1px solid var(--card-border);">
+            <span style="color: #34d399; font-weight: 800;">✔</span>
+            <span><strong>Kill Switch:</strong> Desactivación de emergencia (&lt; 1s) sin necesidad de re-desplegar código.</span>
           </div>
         </div>
       </div>
@@ -808,7 +587,7 @@
 
     <!-- Footer -->
     <footer>
-      Taller 6: Continuous Deployment • Trunk-Based Development • ConfigCat • Render • GitHub Actions
+      Pipeline verificado • Trunk-Based Development • ConfigCat • Render
     </footer>
   </div>
 
@@ -876,37 +655,45 @@
       if (killSwitch) {
         badgeState.textContent = '🚨 KILL SWITCH ACTIVO (OFF)';
         badgeState.style.color = '#ef4444';
-        badgeDemo.textContent = 'KILL SWITCH (OFF)';
-        badgeDemo.style.color = '#ef4444';
+        if (badgeDemo) {
+          badgeDemo.textContent = 'KILL SWITCH (OFF)';
+          badgeDemo.style.color = '#ef4444';
+        }
         banner.className = 'alert-banner alert-danger';
-        bannerMsg.textContent = 'ALERTA: Kill switch activado por anomalía. Pagos Express bloqueados de inmediato (< 1s).';
+        bannerMsg.textContent = 'Kill switch activado. Pagos Express bloqueados de inmediato (< 1s).';
         btnWrapper.style.display = 'none';
         return;
       }
 
       if (rollout === 0) {
-        badgeState.textContent = '0% (Apagado / Fail-Closed)';
+        badgeState.textContent = '0% (Fail-Closed)';
         badgeState.style.color = '#f87171';
-        badgeDemo.textContent = 'Toggle: OFF (0%)';
-        badgeDemo.style.color = '#f87171';
+        if (badgeDemo) {
+          badgeDemo.textContent = 'Toggle: OFF (0%)';
+          badgeDemo.style.color = '#f87171';
+        }
         banner.className = 'alert-banner alert-warning';
-        bannerMsg.textContent = 'Funcionalidad protegida por Feature Toggle (0% OFF). El botón está oculto para usuarios generales.';
+        bannerMsg.textContent = 'Toggle en 0% OFF. Funcionalidad oculta para usuarios generales.';
         btnWrapper.style.display = 'none';
       } else if (rollout === 20) {
-        badgeState.textContent = '🟡 20% Canary (Cohorte Activa)';
+        badgeState.textContent = '🟡 20% Canary';
         badgeState.style.color = '#fbbf24';
-        badgeDemo.textContent = 'Canary 20% ON';
-        badgeDemo.style.color = '#fbbf24';
+        if (badgeDemo) {
+          badgeDemo.textContent = 'Canary 20% ON';
+          badgeDemo.style.color = '#fbbf24';
+        }
         banner.className = 'alert-banner alert-success';
-        bannerMsg.textContent = '¡Estás en la cohorte Canary (20%)! El botón de Pago Express con 1 clic está disponible para pruebas seguras.';
+        bannerMsg.textContent = 'Cohorte Canary activa (20%). Pago Express habilitado.';
         btnWrapper.style.display = 'block';
       } else {
-        badgeState.textContent = '🟢 100% GA (Disponible para Todos)';
+        badgeState.textContent = '🟢 100% GA';
         badgeState.style.color = '#34d399';
-        badgeDemo.textContent = '100% GA Activo';
-        badgeDemo.style.color = '#34d399';
+        if (badgeDemo) {
+          badgeDemo.textContent = '100% GA Activo';
+          badgeDemo.style.color = '#34d399';
+        }
         banner.className = 'alert-banner alert-success';
-        bannerMsg.textContent = '¡Lanzamiento General (100% GA)! Funcionalidad disponible para todos los usuarios.';
+        bannerMsg.textContent = 'Lanzamiento General (100% GA). Disponible para todos los usuarios.';
         btnWrapper.style.display = 'block';
       }
     }
@@ -942,9 +729,8 @@
     async function ejecutarPagoExpress(simulateError) {
       const resBox = document.getElementById('tx-result-box');
       resBox.style.display = 'block';
-      resBox.textContent = 'Procesando pago express en Render con Feature Toggle...';
+      resBox.textContent = 'Procesando pago express...';
 
-      // Query param simulate_flags si estamos en 20% o 100%
       const flagParam = currentRollout === 20 ? 'canary' : (currentRollout === 100 ? 'all' : 'off');
       const url = `/api/pagos-express?simulate_flags=${flagParam}`;
 
@@ -963,7 +749,7 @@
         const data = await res.json();
         if (res.ok) {
           resBox.style.color = '#34d399';
-          resBox.textContent = `✔ PAGO APROBADO: ID ${data.transaction.id} | Monto: $${data.transaction.monto} | Latencia: ${data.transaction.latency_ms}ms | Estado: ${data.transaction.status}`;
+          resBox.textContent = `✔ PAGO APROBADO: ID ${data.transaction.id} | Monto: $${data.transaction.monto} | Latencia: ${data.transaction.latency_ms}ms`;
         } else {
           resBox.style.color = '#f87171';
           resBox.textContent = `✖ ERROR [${res.status}]: ${data.error || 'Fallo'} - ${data.message || 'Transacción rechazada'}`;
